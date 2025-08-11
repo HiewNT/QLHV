@@ -1,0 +1,198 @@
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - QLHV</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .register-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .register-header {
+            background: linear-gradient(135deg, #0acf97 0%, #1ce1ac 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .register-header h3 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .register-body {
+            padding: 40px 30px;
+        }
+        
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #0acf97;
+            box-shadow: 0 0 0 0.2rem rgba(10, 207, 151, 0.25);
+        }
+        
+        .btn-register {
+            background: linear-gradient(135deg, #0acf97 0%, #1ce1ac 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(10, 207, 151, 0.4);
+            color: white;
+        }
+        
+        .register-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .register-links a {
+            color: #0acf97;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        .register-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .form-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <h3><i class="bi bi-mortarboard-fill me-2"></i>QLHV</h3>
+                <p class="mb-0 mt-2 opacity-75">Đăng ký tài khoản mới</p>
+            </div>
+            
+            <div class="register-body">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        </ul>
+                    </div>
+                }
+                
+                <form method="post">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person me-1"></i>Tên đăng nhập
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               placeholder="Nhập tên đăng nhập" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-lock me-1"></i>Mật khẩu
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="Nhập mật khẩu" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">
+                            <i class="bi bi-lock-fill me-1"></i>Xác nhận mật khẩu
+                        </label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
+                               placeholder="Nhập lại mật khẩu" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="maNguoi" class="form-label">
+                            <i class="bi bi-person-badge me-1"></i>Mã người trong hệ thống
+                        </label>
+                        <input type="text" class="form-control" id="maNguoi" name="maNguoi" 
+                               placeholder="Nhập mã người (NV001, HV001, ...)" required>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>Mã người phải tồn tại trong hệ thống (Nhân viên, Học viên, Đảng viên)
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-register">
+                        <i class="bi bi-person-plus me-2"></i>Đăng ký
+                    </button>
+                </form>
+                
+                <div class="register-links">
+                    <a href="@Url.Action("Login", "Account")">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập
+                    </a>
+                    <span class="text-muted">|</span>
+                    <a href="@Url.Action("Index", "Home")">
+                        <i class="bi bi-house me-1"></i>Trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

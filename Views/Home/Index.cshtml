@@ -1,0 +1,267 @@
+﻿@{
+    ViewData["Title"] = "Bảng điều khiển";
+}
+
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    
+    .stat-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 600;
+        margin: 0.5rem 0;
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.15;
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+    }
+    
+    .gradient-blue { background: linear-gradient(45deg, #727cf5 0%, #8592fd 100%); }
+    .gradient-green { background: linear-gradient(45deg, #0acf97 0%, #1ce1ac 100%); }
+    .gradient-orange { background: linear-gradient(45deg, #fa6767 0%, #fd8585 100%); }
+    .gradient-purple { background: linear-gradient(45deg, #6b5eae 0%, #8777d9 100%); }
+    .gradient-red { background: linear-gradient(45deg, #ff679b 0%, #ff8db3 100%); }
+    .gradient-teal { background: linear-gradient(45deg, #02a8b5 0%, #0bc6d5 100%); }
+    .gradient-gray { background: linear-gradient(45deg, #37404a 0%, #4e5a66 100%); }
+    .gradient-yellow { background: linear-gradient(45deg, #fbbc06 0%, #ffd04c 100%); }
+    .gradient-indigo { background: linear-gradient(45deg, #4f46e5 0%, #6366f1 100%); }
+    
+    .welcome-card {
+        background: linear-gradient(45deg, #727cf5 0%, #8592fd 100%);
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card .btn-light {
+        background: rgba(255,255,255,0.15);
+        border: none;
+        color: #fff;
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .stat-card .btn-light:hover {
+        background: rgba(255,255,255,0.25);
+        color: #fff;
+    }
+    
+    media (max-width: 768px) {
+        .stat-number {
+            font-size: 1.75rem;
+        }
+        .stat-icon {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<!-- Welcome Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="welcome-card">
+            <div class="card-body text-white py-4">
+                <div class="d-flex align-items-center justify-content-center">
+                    <i class="bi bi-mortarboard-fill me-3 fs-2"></i>
+                    <div class="text-center">
+                        <h3 class="mb-2">Hệ thống Quản lý Học viên</h3>
+                        <p class="mb-0 opacity-75">Chào mừng bạn đến với hệ thống quản lý học viên HQT</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Grid -->
+<div class="row g-4">
+    <!-- Nhân viên -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card gradient-blue text-white position-relative">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-75 mb-1">Nhân viên HQT</h6>
+                        <div class="stat-number">@ViewBag.TongNhanVien</div>
+                        <p class="text-white-50 small mb-2">Cán bộ, nhân viên học viện</p>
+                        <a href="@Url.Action("Index", "NhanVien")" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-right me-1"></i>Quản lý
+                        </a>
+                    </div>
+                    <i class="bi bi-people-fill stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Học viên Lào -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card gradient-red text-white position-relative">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-75 mb-1">Học viên Lào</h6>
+                        <div class="stat-number">@ViewBag.TongLao</div>
+                        <p class="text-white-50 small mb-2">Học viên đến từ CHDCND Lào</p>
+                        <a href="@Url.Action("Index", "HocVienLao")" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-right me-1"></i>Xem danh sách
+                        </a>
+                    </div>
+                    <i class="bi bi-flag-fill stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Học viên Cam -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card gradient-teal text-white position-relative">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-75 mb-1">Học viên Cam</h6>
+                        <div class="stat-number">@ViewBag.TongCam</div>
+                        <p class="text-white-50 small mb-2">Học viên đến từ Vương quốc Campuchia</p>
+                        <a href="@Url.Action("Index", "HocVienCam")" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-right me-1"></i>Xem danh sách
+                        </a>
+                    </div>
+                    <i class="bi bi-flag stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Đảng viên -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card gradient-orange text-white position-relative">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-75 mb-1">Đảng viên</h6>
+                        <div class="stat-number">@ViewBag.TongDangVien</div>
+                        <p class="text-white-50 small mb-2">Nhân viên và học viên là đảng viên</p>
+                        <a href="@Url.Action("Index", "DangVien")" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-right me-1"></i>Danh sách
+                        </a>
+                    </div>
+                    <i class="bi bi-award-fill stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phong trào thi đua -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card gradient-purple text-white position-relative">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-75 mb-1">Phong trào thi đua</h6>
+                        <div class="stat-number">@ViewBag.TongPhongTrao</div>
+                        <p class="text-white-50 small mb-2">Các phong trào, chiến dịch thi đua</p>
+                        <a href="@Url.Action("Index", "PhongTraoThiDua")" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-right me-1"></i>Quản lý
+                        </a>
+                    </div>
+                    <i class="bi bi-bullseye stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Khen thưởng -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card gradient-yellow text-white position-relative">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-75 mb-1">Khen thưởng</h6>
+                        <div class="stat-number">@ViewBag.TongKhenThuong</div>
+                        <p class="text-white-50 small mb-2">Quyết định khen thưởng nhân viên</p>
+                        <a href="@Url.Action("Index", "KhenThuong")" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-right me-1"></i>Xem chi tiết
+                        </a>
+                    </div>
+                    <i class="bi bi-trophy-fill stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kỷ luật -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card gradient-gray text-white position-relative">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-75 mb-1">Kỷ luật</h6>
+                        <div class="stat-number">@ViewBag.TongKyLuat</div>
+                        <p class="text-white-50 small mb-2">Quyết định kỷ luật nhân viên</p>
+                        <a href="@Url.Action("Index", "KyLuat")" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-right me-1"></i>Xem chi tiết
+                        </a>
+                    </div>
+                    <i class="bi bi-exclamation-triangle-fill stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kết quả học tập -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card gradient-green text-white position-relative">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-75 mb-1">Kết quả học tập</h6>
+                        <div class="stat-number">@ViewBag.TongHocVien</div>
+                        <p class="text-white-50 small mb-2">Điểm số và kết quả học tập</p>
+                        <a href="@Url.Action("Index", "KetQuaHocTap")" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-right me-1"></i>Xem kết quả
+                        </a>
+                    </div>
+                    <i class="bi bi-journal-text stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quản lý người dùng -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card gradient-indigo text-white position-relative">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-75 mb-1">Người dùng hệ thống</h6>
+                        <div class="stat-number">@ViewBag.TongUser</div>
+                        <p class="text-white-50 small mb-2">Quản lý tài khoản và phân quyền</p>
+                        <a href="@Url.Action("Index", "User")" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-right me-1"></i>Quản lý
+                        </a>
+                    </div>
+                    <i class="bi bi-shield-lock stat-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

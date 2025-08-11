@@ -1,0 +1,261 @@
+@model QLHV.Models.Nguoi
+@{
+    ViewData["Title"] = "Cập nhật thông tin Đảng viên";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">@ViewData["Title"]</h2>
+    <a asp-controller="DangVien" asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Trở về
+    </a>
+</div>
+
+<div class="alert alert-info mb-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div><strong>Họ tên:</strong> @Model.HoTen</div>
+            <div><strong>Cấp bậc:</strong> @Model.CapBac</div>
+            <div><strong>Chức vụ:</strong> @Model.ChucVu</div>
+        </div>
+        <div class="col-md-6">
+            <div><strong>Loại:</strong> @(Model.LoaiNguoi == "NhanVien" ? "Nhân viên" : "Học viên")</div>
+            @if (Model.LoaiNguoi == "HocVien")
+            {
+                <div><strong>Quốc tịch:</strong> @Model.QuocTich</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card shadow border-0">
+            <div class="card-body">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle"></i> @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> @TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                
+                <form asp-action="DetailsHocVien" method="post" class="row g-3" id="dangVienForm">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="MaNguoi" />
+                    <input type="hidden" asp-for="LoaiNguoi" />
+                    <input type="hidden" asp-for="QuocTich" />
+
+                    <div class="col-12">
+                        <label asp-for="MaLoaiDangVien" class="form-label">Loại Đảng viên <span class="text-danger">*</span></label>
+                        <select asp-for="MaLoaiDangVien" class="form-select" asp-items="ViewBag.LoaiDangViens" required>
+                            <option value="">-- Chọn loại Đảng viên --</option>
+                        </select>
+                        <span asp-validation-for="MaLoaiDangVien" class="text-danger"></span>
+                        <div class="form-text">Vui lòng chọn loại Đảng viên phù hợp</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="NgayVaoDangDuBi" class="form-label">Ngày vào Đảng dự bị</label>
+                        <input name="NgayVaoDangDuBi" type="text" class="form-control date-input" placeholder="dd/MM/yyyy" 
+                               value="@(Model.NgayVaoDangDuBi?.ToString("dd/MM/yyyy"))" maxlength="10" />
+                        <div class="text-danger" id="NgayVaoDangDuBi-error"></div>
+                        <div class="form-text">Để trống nếu chưa vào Đảng dự bị</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="NgayVaoDangChinhThuc" class="form-label">Ngày vào Đảng chính thức</label>
+                        <input name="NgayVaoDangChinhThuc" type="text" class="form-control date-input" placeholder="dd/MM/yyyy" 
+                               value="@(Model.NgayVaoDangChinhThuc?.ToString("dd/MM/yyyy"))" maxlength="10" />
+                        <div class="text-danger" id="NgayVaoDangChinhThuc-error"></div>
+                        <div class="form-text">Để trống nếu chưa vào Đảng chính thức</div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="bi bi-save"></i> Lưu lại
+                            </button>
+                            <a asp-controller="DangVien" asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Hủy bỏ
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            console.log('DangVien DetailsHocVien script loaded');
+            
+            // Date validation and formatting
+            $('.date-input').on('blur', function() {
+                validateDateField($(this));
+            });
+            
+            // Auto-format date input as user types
+            $('.date-input').on('input', function() {
+                autoFormatDate($(this));
+            });
+            
+            // Form submission validation
+            $('#dangVienForm').on('submit', function(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Show loading state
+                $('#submitBtn').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Đang xử lý...');
+                
+                console.log('Form submitted successfully');
+                return true;
+            });
+            
+            // Function to validate a single date field
+            function validateDateField($input) {
+                var value = $input.val().trim();
+                var fieldName = $input.attr('name');
+                var $errorDiv = $('#' + fieldName + '-error');
+                
+                // Remove existing error styling
+                $input.removeClass('is-invalid');
+                $errorDiv.text('').hide();
+                
+                // Only validate if there's a value
+                if (value !== '') {
+                    // Check format dd/MM/yyyy
+                    var dateRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+                    if (!dateRegex.test(value)) {
+                        $input.addClass('is-invalid');
+                        $errorDiv.text('Định dạng ngày không đúng (dd/MM/yyyy)').show();
+                        return false;
+                    }
+                    
+                    // Parse and validate date components
+                    var parts = value.split('/');
+                    var day = parseInt(parts[0]);
+                    var month = parseInt(parts[1]);
+                    var year = parseInt(parts[2]);
+                    
+                    // Basic range validation
+                    if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > 2100) {
+                        $input.addClass('is-invalid');
+                        $errorDiv.text('Ngày không hợp lệ').show();
+                        return false;
+                    }
+                    
+                    // Additional validation for specific months
+                    var daysInMonth = new Date(year, month, 0).getDate();
+                    if (day > daysInMonth) {
+                        $input.addClass('is-invalid');
+                        $errorDiv.text('Ngày không hợp lệ cho tháng này').show();
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            
+            // Function to auto-format date input
+            function autoFormatDate($input) {
+                var value = $input.val();
+                var cursorPos = $input[0].selectionStart;
+                
+                // Remove all non-digits
+                var numbers = value.replace(/\D/g, '');
+                
+                if (numbers.length <= 8) {
+                    var formatted = '';
+                    for (var i = 0; i < numbers.length; i++) {
+                        if (i === 2 || i === 4) {
+                            formatted += '/';
+                        }
+                        formatted += numbers[i];
+                    }
+                    
+                    if (formatted !== value) {
+                        $input.val(formatted);
+                        
+                        // Adjust cursor position
+                        var newCursorPos = cursorPos;
+                        if (value.length < formatted.length) {
+                            newCursorPos++;
+                        }
+                        $input[0].setSelectionRange(newCursorPos, newCursorPos);
+                    }
+                }
+            }
+            
+            // Function to validate entire form
+            function validateForm() {
+                var isValid = true;
+                
+                // Validate required fields
+                if (!$('#MaLoaiDangVien').val()) {
+                    $('#MaLoaiDangVien').addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $('#MaLoaiDangVien').removeClass('is-invalid');
+                }
+                
+                // Validate date fields
+                $('.date-input').each(function() {
+                    if (!validateDateField($(this))) {
+                        isValid = false;
+                    }
+                });
+                
+                if (!isValid) {
+                    // Scroll to first error
+                    $('.is-invalid').first().focus();
+                    
+                    // Show error message
+                    if (!$('.alert-danger').length) {
+                        var errorHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                            '<i class="bi bi-exclamation-triangle"></i> Vui lòng kiểm tra lại các trường có lỗi.' +
+                            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                            '</div>';
+                        $('.card-body').prepend(errorHtml);
+                    }
+                }
+                
+                return isValid;
+            }
+            
+            // Clear validation errors when user starts typing
+            $('.date-input').on('input', function() {
+                var $input = $(this);
+                var fieldName = $input.attr('name');
+                var $errorDiv = $('#' + fieldName + '-error');
+                
+                if ($input.hasClass('is-invalid')) {
+                    $input.removeClass('is-invalid');
+                    $errorDiv.text('').hide();
+                }
+            });
+            
+            // Clear validation errors when user changes dropdown
+            $('#MaLoaiDangVien').on('change', function() {
+                if ($(this).hasClass('is-invalid')) {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+            
+            console.log('Date validation and form handling initialized');
+        });
+    </script>
+}

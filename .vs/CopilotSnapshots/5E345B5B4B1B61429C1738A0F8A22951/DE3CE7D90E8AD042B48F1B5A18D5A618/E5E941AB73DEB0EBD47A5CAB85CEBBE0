@@ -1,0 +1,39 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using QLHV.Models;
+
+namespace QLHV.Controllers;
+
+public class KyLuatController : Controller
+{
+    private readonly QlhvContext _context;
+
+    public KyLuatController(QlhvContext context)
+    {
+        _context = context;
+    }
+
+    // GET: KyLuat
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    // GET: KyLuat/GetData - For DataTables AJAX
+    public async Task<IActionResult> GetData()
+    {
+        var kyLuats = await _context.KyLuats
+            .Include(k => k.MaNhanVienNavigation)
+            .Select(k => new
+            {
+                MaKyLuat = k.MaKyLuat,
+                HoTen = k.MaNhanVienNavigation != null ? k.MaNhanVienNavigation.HoTen : "",
+                LyDo = k.LyDo,
+                NgayKyLuat = k.NgayKyLuat.HasValue ? k.NgayKyLuat.Value.ToString("dd/MM/yyyy") : "",
+                MucDo = k.MucDo
+            })
+            .ToListAsync();
+
+        return Json(new { data = kyLuats });
+    }
+}

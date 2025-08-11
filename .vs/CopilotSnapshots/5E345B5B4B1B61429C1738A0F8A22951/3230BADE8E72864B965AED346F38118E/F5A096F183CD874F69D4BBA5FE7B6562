@@ -1,0 +1,174 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using QLHV.Models;
+
+namespace QLHV.Controllers;
+
+public class KyLuatController : Controller
+{
+    private readonly QlhvContext _context;
+
+    public KyLuatController(QlhvContext context)
+    {
+        _context = context;
+    }
+
+    // GET: KyLuat
+    public async Task<IActionResult> Index()
+    {
+        await PopulateDropDownListsAsync();
+        return View();
+    }
+
+    // GET: KyLuat/GetData - For DataTables AJAX
+    public async Task<IActionResult> GetData()
+    {
+        try
+        {
+            var kyLuats = await _context.KyLuats
+                .Include(k => k.MaNhanVienNavigation)
+                .Select(k => new
+                {
+                    k.MaKyLuat,
+                    HoTen = k.MaNhanVienNavigation != null ? k.MaNhanVienNavigation.HoTen : "",
+                    k.LyDo,
+                    NgayKyLuat = k.NgayKyLuat.HasValue ? k.NgayKyLuat.Value.ToString("dd/MM/yyyy") : "",
+                    k.MucDo
+                })
+                .ToListAsync();
+
+            var result = new { data = kyLuats };
+            
+            // Log the result for debugging
+            Console.WriteLine($"KyLuat GetData: Found {kyLuats.Count} records");
+            if (kyLuats.Any())
+            {
+                var first = kyLuats.First();
+                Console.WriteLine($"First record: MaKyLuat={first.MaKyLuat}, HoTen={first.HoTen}");
+            }
+            
+            return Json(result);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in KyLuat GetData: {ex.Message}");
+            return Json(new { data = new List<object>(), error = ex.Message });
+        }
+    }
+
+    // GET: KyLuat/Details/5
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var kyLuat = await _context.KyLuats
+            .Include(k => k.MaNhanVienNavigation)
+            .FirstOrDefaultAsync(m => m.MaKyLuat == id);
+
+        if (kyLuat == null) return NotFound();
+        return View(kyLuat);
+    }
+
+    // GET: KyLuat/Create
+    public async Task<IActionResult> Create()
+    {
+        await PopulateDropDownListsAsync();
+        return View();
+    }
+
+    // POST: KyLuat/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create([Bind("MaNhanVien,LyDo,NgayKyLuat,MucDo")] KyLuat kyLuat)
+    {
+        if (ModelState.IsValid)
+        {
+            _context.Add(kyLuat);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Thêm kỷ luật thành công!";
+            return RedirectToAction(nameof(Index));
+        }
+        await PopulateDropDownListsAsync(kyLuat);
+        return View(kyLuat);
+    }
+
+    // GET: KyLuat/Edit/5
+    public async Task<IActionResult> Edit(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var kyLuat = await _context.KyLuats.FindAsync(id);
+        if (kyLuat == null) return NotFound();
+
+        await PopulateDropDownListsAsync(kyLuat);
+        return View(kyLuat);
+    }
+
+    // POST: KyLuat/Edit/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, [Bind("MaKyLuat,MaNhanVien,LyDo,NgayKyLuat,MucDo")] KyLuat kyLuat)
+    {
+        if (id != kyLuat.MaKyLuat) return NotFound();
+
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                _context.Update(kyLuat);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Cập nhật kỷ luật thành công!";
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!KyLuatExists(kyLuat.MaKyLuat))
+                    return NotFound();
+                else
+                    throw;
+            }
+            return RedirectToAction(nameof(Index));
+        }
+        await PopulateDropDownListsAsync(kyLuat);
+        return View(kyLuat);
+    }
+
+    // GET: KyLuat/Delete/5
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var kyLuat = await _context.KyLuats
+            .Include(k => k.MaNhanVienNavigation)
+            .FirstOrDefaultAsync(m => m.MaKyLuat == id);
+
+        if (kyLuat == null) return NotFound();
+        return View(kyLuat);
+    }
+
+    // POST: KyLuat/Delete/5
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var kyLuat = await _context.KyLuats.FindAsync(id);
+        if (kyLuat != null)
+        {
+            _context.KyLuats.Remove(kyLuat);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Xóa kỷ luật thành công!";
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    private bool KyLuatExists(int id)
+    {
+        return _context.KyLuats.Any(e => e.MaKyLuat == id);
+    }
+
+    private async Task PopulateDropDownListsAsync(KyLuat? kyLuat = null)
+    {
+        ViewBag.MaNhanVien = new SelectList(await _context.NhanViens.ToListAsync(), "MaNhanVien", "HoTen", kyLuat?.MaNhanVien);
+    }
+}

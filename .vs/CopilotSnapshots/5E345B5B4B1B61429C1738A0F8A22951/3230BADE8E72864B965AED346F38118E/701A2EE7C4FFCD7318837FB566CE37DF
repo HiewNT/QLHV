@@ -1,0 +1,56 @@
+﻿@model IEnumerable<QLHV.Models.KetQuaHocTap>
+@{
+    ViewData["Title"] = "Kết quả học tập";
+    var maHv = (int?)ViewBag.MaHocVien;
+}
+<h2>@ViewData["Title"]</h2>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input class="form-control" type="number" name="maHocVien" placeholder="Mã học viên" value="@(maHv?.ToString() ?? "")" />
+    </div>
+    <div class="col-auto"><button class="btn btn-primary" type="submit">Lọc</button></div>
+    <div class="col-auto"><a class="btn btn-secondary" href="@Url.Action("Index")">Xóa lọc</a></div>
+</form>
+<div class="card shadow border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="ketQuaTable" class="table table-bordered table-striped align-middle" style="width:100%">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Mã</th>
+                        <th>Học viên</th>
+                        <th>Năm học</th>
+                        <th>Điểm TB</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var k in Model)
+                {
+                    <tr>
+                        <td>@k.MaKetQua</td>
+                        <td>@k.MaHocVienNavigation?.HoTen (@k.MaHocVien)</td>
+                        <td>@k.NamHoc</td>
+                        <td>@k.DiemTrungBinh</td>
+                        <td>@k.GhiChu</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#ketQuaTable').DataTable({
+                language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json' },
+                pageLength: 10
+            });
+        });
+    </script>
+}
+

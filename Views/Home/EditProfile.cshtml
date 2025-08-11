@@ -1,0 +1,185 @@
+@model QLHV.Models.User
+
+@{
+    ViewData["Title"] = "Sửa thông tin cá nhân";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-gear text-primary me-2"></i>
+                        Sửa thông tin cá nhân
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle me-2"></i>
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <h6 class="alert-heading">Có lỗi xảy ra:</h6>
+                            <ul class="mb-0">
+                                @foreach (var modelState in ViewData.ModelState.Values)
+                                {
+                                    foreach (var error in modelState.Errors)
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <form asp-action="EditProfile" method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-person me-1"></i>Họ và tên <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" name="HoTen" value="@Model.MaNguoiNavigation?.HoTen" required />
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-calendar me-1"></i>Ngày sinh
+                                    </label>
+                                    <input type="date" class="form-control" name="NgaySinh" 
+                                           value="@(Model.MaNguoiNavigation?.NgaySinh?.ToString("yyyy-MM-dd"))" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-star me-1"></i>Cấp bậc
+                                    </label>
+                                    <input type="text" class="form-control" name="CapBac" value="@Model.MaNguoiNavigation?.CapBac" />
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-briefcase me-1"></i>Chức vụ
+                                    </label>
+                                    <input type="text" class="form-control" name="ChucVu" value="@Model.MaNguoiNavigation?.ChucVu" />
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.MaNguoiNavigation?.LoaiNguoi == "HocVien")
+                        {
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="bi bi-book me-1"></i>Chuyên ngành
+                                        </label>
+                                        <input type="text" class="form-control" name="ChuyenNganh" value="@Model.MaNguoiNavigation?.ChuyenNganh" />
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="bi bi-building me-1"></i>Trường học
+                                        </label>
+                                        <input type="text" class="form-control" name="TruongHoc" value="@Model.MaNguoiNavigation?.TruongHoc" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="bi bi-mortarboard me-1"></i>Khóa học
+                                        </label>
+                                        <input type="text" class="form-control" name="KhoaHoc" value="@Model.MaNguoiNavigation?.KhoaHoc" />
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="bi bi-calendar-plus me-1"></i>Ngày nhập học
+                                        </label>
+                                        <input type="date" class="form-control" name="NgayNhapHoc" 
+                                               value="@(Model.MaNguoiNavigation?.NgayNhapHoc?.ToString("yyyy-MM-dd"))" />
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="bi bi-calendar-check me-1"></i>Ngày tốt nghiệp
+                                        </label>
+                                        <input type="date" class="form-control" name="NgayTotNghiep" 
+                                               value="@(Model.MaNguoiNavigation?.NgayTotNghiep?.ToString("yyyy-MM-dd"))" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a asp-action="Profile" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left me-1"></i>Quay lại
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-1"></i>Cập nhật thông tin
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 0.375rem;
+        }
+    </style>
+}

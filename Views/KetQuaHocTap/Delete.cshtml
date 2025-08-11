@@ -1,0 +1,197 @@
+@model QLHV.Models.KetQuaHocTap
+@{
+    ViewData["Title"] = "Xóa kết quả học tập";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-header bg-danger text-white border-0" style="border-radius: 15px 15px 0 0;">
+                    <div class="d-flex align-items-center">
+                        <a asp-action="Index" class="btn btn-outline-light btn-sm me-3">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@ViewData["Title"]
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning" role="alert">
+                        <h6 class="alert-heading mb-2">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Cảnh báo!
+                        </h6>
+                        <p class="mb-0">Bạn có chắc chắn muốn xóa kết quả học tập này? Hành động này không thể hoàn tác.</p>
+                    </div>
+
+                    <!-- Thông tin kết quả học tập -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-primary">Mã kết quả</label>
+                                <div class="form-control-plaintext">@Model.MaKetQua</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-primary">Mã học viên</label>
+                                <div class="form-control-plaintext">@Model.MaNguoi</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-primary">Họ và tên</label>
+                                <div class="form-control-plaintext">@Model.MaNguoiNavigation?.HoTen</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-primary">Năm học</label>
+                                <div class="form-control-plaintext">
+                                    @if (!string.IsNullOrEmpty(Model.NamHoc))
+                                    {
+                                        <span class="badge bg-info fs-6">@Model.NamHoc</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa cập nhật</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-primary">Điểm trung bình</label>
+                                <div class="form-control-plaintext">
+                                    @if (Model.DiemTrungBinh.HasValue)
+                                    {
+                                        var diem = (double)Model.DiemTrungBinh.Value;
+                                        string badgeClass = "bg-secondary";
+                                        if (diem >= 8.0) badgeClass = "bg-success";
+                                        else if (diem >= 6.5) badgeClass = "bg-warning";
+                                        else if (diem >= 5.0) badgeClass = "bg-info";
+                                        else badgeClass = "bg-danger";
+                                        
+                                        <span class="badge @badgeClass fs-5">@diem.ToString("F1")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa có điểm</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-primary">Xếp loại</label>
+                                <div class="form-control-plaintext">
+                                    @if (Model.DiemTrungBinh.HasValue)
+                                    {
+                                        var diem = (double)Model.DiemTrungBinh.Value;
+                                        string xepLoai = "";
+                                        string badgeClass = "bg-secondary";
+                                        
+                                        if (diem >= 9.0)
+                                        {
+                                            xepLoai = "Xuất sắc";
+                                            badgeClass = "bg-success";
+                                        }
+                                        else if (diem >= 8.0)
+                                        {
+                                            xepLoai = "Giỏi";
+                                            badgeClass = "bg-success";
+                                        }
+                                        else if (diem >= 6.5)
+                                        {
+                                            xepLoai = "Khá";
+                                            badgeClass = "bg-warning";
+                                        }
+                                        else if (diem >= 5.0)
+                                        {
+                                            xepLoai = "Trung bình";
+                                            badgeClass = "bg-info";
+                                        }
+                                        else
+                                        {
+                                            xepLoai = "Yếu";
+                                            badgeClass = "bg-danger";
+                                        }
+                                        
+                                        <span class="badge @badgeClass fs-6">@xepLoai</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa xếp loại</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.GhiChu))
+                        {
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-primary">Ghi chú</label>
+                                    <div class="form-control-plaintext">@Model.GhiChu</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="border-top pt-4">
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary btn-lg px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Trở về
+                            </a>
+                            <form asp-action="Delete" method="post" style="display: inline;">
+                                <input type="hidden" asp-for="MaKetQua" />
+                                <button type="submit" class="btn btn-danger btn-lg px-4" 
+                                        onclick="return confirm('Bạn có chắc chắn muốn xóa kết quả học tập này?')">
+                                    <i class="bi bi-trash me-2"></i>Xác nhận xóa
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .form-control-plaintext {
+        padding: 0.375rem 0.75rem;
+        background-color: #f8f9fa;
+        border-radius: 0.375rem;
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .badge {
+        font-size: 0.875em;
+    }
+    
+    .alert {
+        border-radius: 8px;
+    }
+</style>

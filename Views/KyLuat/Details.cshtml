@@ -1,0 +1,211 @@
+@model QLHV.Models.KyLuat
+
+@{
+    ViewData["Title"] = "Chi tiết loại kỷ luật";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-header bg-info text-white border-0" style="border-radius: 15px 15px 0 0;">
+                    <div class="d-flex align-items-center">
+                        <a asp-action="Index" class="btn btn-outline-light btn-sm me-3">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-eye me-2"></i>@ViewData["Title"]
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-primary fw-bold mb-2">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>Thông tin loại kỷ luật
+                                </h6>
+                                <div class="card bg-light border-0">
+                                    <div class="card-body">
+                                        <div class="row mb-3">
+                                            <div class="col-sm-4 fw-bold text-muted">Mã kỷ luật:</div>
+                                            <div class="col-sm-8">
+                                                <span class="badge bg-primary fs-6">@Model.MaKyLuat</span>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-sm-4 fw-bold text-muted">Tên kỷ luật:</div>
+                                            <div class="col-sm-8 fw-semibold">@Model.TenKyLuat</div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-sm-4 fw-bold text-muted">Mức độ:</div>
+                                            <div class="col-sm-8">
+                                                @if (!string.IsNullOrEmpty(Model.MucDo))
+                                                {
+                                                    <span class="badge bg-warning">@Model.MucDo</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Chưa cập nhật</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h6 class="text-primary fw-bold mb-2">
+                                    <i class="bi bi-people me-2"></i>Thống kê
+                                </h6>
+                                <div class="card bg-light border-0">
+                                    <div class="card-body text-center">
+                                        <div class="display-4 text-warning fw-bold mb-2">
+                                            @Model.KyLuatNguois.Count
+                                        </div>
+                                        <p class="text-muted mb-0">người bị kỷ luật</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-primary fw-bold mb-0">
+                                <i class="bi bi-list-ul me-2"></i>Danh sách người bị kỷ luật
+                            </h6>
+                            
+                                    <a asp-action="CreatePerson" asp-route-maKyLuat="@Model.MaKyLuat" 
+                                       class="btn btn-warning btn-lg px-4">
+                                        <i class="bi bi-plus-circle me-2"></i>Thêm người kỷ luật mới
+                                    </a>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="card-title mb-0">
+                                    <i class="bi bi-list-ul me-2"></i>Danh sách người bị kỷ luật
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                @if (Model.KyLuatNguois.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="table-warning">
+                                                <tr>
+                                                    <th>Người bị kỷ luật</th>
+                                                    <th>Lý do</th>
+                                                    <th>Ngày kỷ luật</th>
+                                                    <th>Thao tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var kyLuatNguoi in Model.KyLuatNguois)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            @if (kyLuatNguoi.MaNguoiNavigation != null)
+                                                            {
+                                                                @kyLuatNguoi.MaNguoiNavigation.HoTen
+                                                            }
+                                                            else
+                                                            {
+                                                                @kyLuatNguoi.MaNguoi
+                                                            }
+                                                        </td>
+                                                        <td>@kyLuatNguoi.LyDo</td>
+                                                        <td>
+                                                            @if (kyLuatNguoi.NgayKyLuat.HasValue)
+                                                            {
+                                                                @kyLuatNguoi.NgayKyLuat.Value.ToString("dd/MM/yyyy")
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">Chưa có ngày</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            <div class="btn-group btn-group-sm" role="group">
+                                                                <a asp-action="EditPerson" asp-route-id="@kyLuatNguoi.MaKyLuatNguoi" 
+                                                                   asp-route-maKyLuat="@Model.MaKyLuat" 
+                                                                   class="btn btn-outline-warning" title="Sửa">
+                                                                    <i class="bi bi-pencil"></i>
+                                                                </a>
+                                                                <form asp-action="RemovePerson" method="post" style="display: inline;">
+                                                                    <input type="hidden" name="maKyLuat" value="@Model.MaKyLuat" />
+                                                                    <input type="hidden" name="maKyLuatNguoi" value="@kyLuatNguoi.MaKyLuatNguoi" />
+                                                                    <button type="submit" class="btn btn-outline-danger" 
+                                                                            onclick="return confirm('Bạn có chắc muốn xóa người này khỏi danh sách kỷ luật?')" title="Xóa">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-center py-4">
+                                        <i class="bi bi-inbox display-4 text-muted"></i>
+                                        <p class="text-muted mt-2">Chưa có người nào bị kỷ luật</p>
+                                    </div>
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg px-4">
+                            <i class="bi bi-arrow-left me-2"></i>Quay lại
+                        </a>
+                        <div>
+                            <a asp-action="Edit" asp-route-id="@Model.MaKyLuat" class="btn btn-warning btn-lg px-4 me-2">
+                                <i class="bi bi-pencil me-2"></i>Sửa
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.MaKyLuat" class="btn btn-danger btn-lg px-4">
+                                <i class="bi bi-trash me-2"></i>Xóa
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8f9ff !important;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+</style> 

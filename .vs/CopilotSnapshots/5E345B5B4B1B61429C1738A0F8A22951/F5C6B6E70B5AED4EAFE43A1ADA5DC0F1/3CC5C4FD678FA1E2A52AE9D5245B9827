@@ -1,0 +1,156 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using QLHV.Models;
+
+namespace QLHV.Controllers;
+
+public class KhenThuongController : Controller
+{
+    private readonly QlhvContext _context;
+
+    public KhenThuongController(QlhvContext context)
+    {
+        _context = context;
+    }
+
+    // GET: KhenThuong
+    public async Task<IActionResult> Index()
+    {
+        await PopulateDropDownListsAsync();
+        return View();
+    }
+
+    // GET: KhenThuong/GetData - For DataTables AJAX
+    public async Task<IActionResult> GetData()
+    {
+        var khenThuongs = await _context.KhenThuongs
+            .Include(k => k.MaNhanVienNavigation)
+            .Select(k => new
+            {
+                k.MaKhenThuong,
+                HoTen = k.MaNhanVienNavigation != null ? k.MaNhanVienNavigation.HoTen : "",
+                k.LyDo,
+                NgayKhenThuong = k.NgayKhenThuong.HasValue ? k.NgayKhenThuong.Value.ToString("dd/MM/yyyy") : "",
+                k.CapKhenThuong
+            })
+            .ToListAsync();
+
+        return Json(new { data = khenThuongs });
+    }
+
+    // GET: KhenThuong/Details/5
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var khenThuong = await _context.KhenThuongs
+            .Include(k => k.MaNhanVienNavigation)
+            .FirstOrDefaultAsync(m => m.MaKhenThuong == id);
+
+        if (khenThuong == null) return NotFound();
+        return View(khenThuong);
+    }
+
+    // GET: KhenThuong/Create
+    public async Task<IActionResult> Create()
+    {
+        await PopulateDropDownListsAsync();
+        return View();
+    }
+
+    // POST: KhenThuong/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create([Bind("MaNhanVien,LyDo,NgayKhenThuong,CapKhenThuong")] KhenThuong khenThuong)
+    {
+        if (ModelState.IsValid)
+        {
+            _context.Add(khenThuong);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Thêm khen thưởng thành công!";
+            return RedirectToAction(nameof(Index));
+        }
+        await PopulateDropDownListsAsync(khenThuong);
+        return View(khenThuong);
+    }
+
+    // GET: KhenThuong/Edit/5
+    public async Task<IActionResult> Edit(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var khenThuong = await _context.KhenThuongs.FindAsync(id);
+        if (khenThuong == null) return NotFound();
+
+        await PopulateDropDownListsAsync(khenThuong);
+        return View(khenThuong);
+    }
+
+    // POST: KhenThuong/Edit/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, [Bind("MaKhenThuong,MaNhanVien,LyDo,NgayKhenThuong,CapKhenThuong")] KhenThuong khenThuong)
+    {
+        if (id != khenThuong.MaKhenThuong) return NotFound();
+
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                _context.Update(khenThuong);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Cập nhật khen thưởng thành công!";
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!KhenThuongExists(khenThuong.MaKhenThuong))
+                    return NotFound();
+                else
+                    throw;
+            }
+            return RedirectToAction(nameof(Index));
+        }
+        await PopulateDropDownListsAsync(khenThuong);
+        return View(khenThuong);
+    }
+
+    // GET: KhenThuong/Delete/5
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var khenThuong = await _context.KhenThuongs
+            .Include(k => k.MaNhanVienNavigation)
+            .FirstOrDefaultAsync(m => m.MaKhenThuong == id);
+
+        if (khenThuong == null) return NotFound();
+        return View(khenThuong);
+    }
+
+    // POST: KhenThuong/Delete/5
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var khenThuong = await _context.KhenThuongs.FindAsync(id);
+        if (khenThuong != null)
+        {
+            _context.KhenThuongs.Remove(khenThuong);
+            await _context.SaveChangesAsync();
+            TempData["Success"] = "Xóa khen thưởng thành công!";
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    private bool KhenThuongExists(int id)
+    {
+        return _context.KhenThuongs.Any(e => e.MaKhenThuong == id);
+    }
+
+    private async Task PopulateDropDownListsAsync(KhenThuong? khenThuong = null)
+    {
+        ViewBag.MaNhanVien = new SelectList(await _context.NhanViens.ToListAsync(), "MaNhanVien", "HoTen", khenThuong?.MaNhanVien);
+    }
+}

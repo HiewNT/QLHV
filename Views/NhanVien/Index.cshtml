@@ -1,0 +1,217 @@
+@{
+    ViewData["Title"] = "Danh sách nhân viên";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 text-primary fw-bold">
+                <i class="bi bi-person-badge-fill me-2"></i>@ViewData["Title"]
+            </h2>
+            <p class="text-muted mb-0">Quản lý thông tin nhân viên trong hệ thống</p>
+        </div>
+        <a asp-action="Create" class="btn btn-success shadow-sm" style="border-radius: 8px;">
+            <i class="bi bi-plus-circle me-1"></i>Thêm nhân viên
+        </a>
+    </div>
+
+
+
+    <div class="card shadow-sm border-0" style="border-radius: 15px;">
+        <div class="card-header bg-primary text-white border-0" style="border-radius: 15px 15px 0 0;">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-table me-2"></i>Danh sách nhân viên
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="nhanVienTable" class="table table-hover align-middle mb-0" style="width:100%">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="fw-bold text-primary border-0 py-3">Họ và tên</th>
+                            <th class="fw-bold text-primary border-0 py-3">Ngày sinh</th>
+                            <th class="fw-bold text-primary border-0 py-3">Cấp bậc</th>
+                            <th class="fw-bold text-primary border-0 py-3">Chức vụ</th>
+                            <th class="fw-bold text-primary border-0 py-3">Đảng viên</th>
+                            <th class="fw-bold text-primary border-0 py-3">Trình độ</th>
+                            <th class="fw-bold text-primary border-0 py-3">Trường học</th>
+                            <th class="fw-bold text-primary border-0 py-3">Qua trường</th>
+                            <th class="fw-bold text-primary border-0 py-3">Năm nhập ngũ</th>
+                            <th class="fw-bold text-primary border-0 py-3 text-center" style="width:120px">Thao tác</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    
+    <style>
+        .table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f8f9ff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+        }
+        
+        .table td {
+            padding: 15px 12px;
+            vertical-align: middle;
+            border: none;
+        }
+        
+        .btn-group .btn {
+            border-radius: 6px !important;
+            transition: all 0.2s ease;
+            margin: 0 1px;
+        }
+        
+        .btn-group .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* DataTables custom styling */
+        .dataTables_wrapper .dataTables_info {
+            padding-top: 1rem;
+            padding-left: 1.5rem;
+            color: #6c757d;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate {
+            padding-top: 1rem;
+            padding-right: 1.5rem;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 6px !important;
+            margin: 0 2px;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%) !important;
+            border-color: #0d6efd !important;
+        }
+
+        .dataTables_wrapper .dataTables_length {
+            padding-top: 1rem;
+            padding-left: 1.5rem;
+        }
+        
+        .dataTables_wrapper .dataTables_filter {
+            padding-top: 1rem;
+            padding-right: 1.5rem;
+        }
+        
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .dataTables_wrapper .dataTables_length select {
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+
+        keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fade-in 0.3s ease forwards;
+        }
+    </style>
+    
+    <script>
+        $(document).ready(function() {
+            $('#nhanVienTable').DataTable({
+                "processing": true,
+                "serverSide": false,
+                "ajax": {
+                    "url": "@Url.Action("GetData")",
+                    "type": "GET"
+                },
+                "columns": [
+                    { "data": "hoTen" },
+                    { 
+                        "data": "ngaySinh",
+                        "render": function(data) {
+                            return data ? `<span class="text-muted">${moment(data).format('DD/MM/YYYY')}</span>` : '';
+                        }
+                    },
+                    { "data": "capBac" },
+                    { "data": "chucVu" },
+                    { 
+                        "data": "loaiDangVien",
+                        "render": function(data) {
+                            return data ? `<span class="badge bg-info px-3 py-2">${data}</span>` : '';
+                        }
+                    },
+                    { "data": "trinhDo" },
+                    { "data": "truongHoc" },
+                    { "data": "quaTruong" },
+                    { 
+                        "data": "namNhapNgu",
+                        "render": function(data) {
+                            return data ? `<span class="text-muted">${moment(data).format('DD/MM/YYYY')}</span>` : '';
+                        }
+                    },
+                    {
+                        "data": "maNguoi",
+                        "render": function(data, type, row) {
+                            return '<div class="btn-group btn-group-sm d-flex justify-content-center" role="group">' +
+                                '<a href="@Url.Action("Details")/' + data + '" class="btn btn-outline-info shadow-sm" title="Chi tiết" style="border-radius: 6px;">' +
+                                '<i class="bi bi-eye"></i></a>' +
+                                '<a href="@Url.Action("Edit")/' + data + '" class="btn btn-outline-primary shadow-sm" title="Sửa" style="border-radius: 6px;">' +
+                                '<i class="bi bi-pencil"></i></a>' +
+                                '<a href="@Url.Action("Delete")/' + data + '" class="btn btn-outline-danger shadow-sm" title="Xóa" style="border-radius: 6px;">' +
+                                '<i class="bi bi-trash"></i></a>' +
+                                '</div>';
+                        },
+                        "orderable": false
+                    }
+                ],
+                "language": {
+                    "url": "//cdn.datatables.net/1.13.7/i18n/vi.json"
+                },
+                "pageLength": 25,
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Tất cả"]],
+                "responsive": true,
+                "scrollX": true,
+                "order": [[0, "asc"]],
+                "drawCallback": function() {
+                    // Add animation to newly loaded rows
+                    $('#nhanVienTable tbody tr').each(function(index) {
+                        $(this).css('animation-delay', (index * 0.05) + 's');
+                        $(this).addClass('fade-in');
+                    });
+                }
+            });
+        });
+    </script>
+}
+

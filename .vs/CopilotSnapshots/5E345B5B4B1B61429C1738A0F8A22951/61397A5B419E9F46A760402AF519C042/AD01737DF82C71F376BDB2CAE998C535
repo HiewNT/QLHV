@@ -1,0 +1,37 @@
+﻿@model IEnumerable<QLHV.Models.KetQuaHocTap>
+@{
+    ViewData["Title"] = "Kết quả học tập";
+    var maHv = (int?)ViewBag.MaHocVien;
+}
+<h2>@ViewData["Title"]</h2>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input class="form-control" type="number" name="maHocVien" placeholder="Mã học viên" value="@(maHv?.ToString() ?? "")" />
+    </div>
+    <div class="col-auto"><button class="btn btn-primary" type="submit">Lọc</button></div>
+    <div class="col-auto"><a class="btn btn-secondary" href="@Url.Action("Index")">Xóa lọc</a></div>
+    </form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Học viên</th>
+            <th>Năm học</th>
+            <th>Điểm TB</th>
+            <th>Ghi chú</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var k in Model)
+    {
+        <tr>
+            <td>@k.MaKetQua</td>
+            <td>@k.MaHocVienNavigation?.HoTen (@k.MaHocVien)</td>
+            <td>@k.NamHoc</td>
+            <td>@k.DiemTrungBinh</td>
+            <td>@k.GhiChu</td>
+        </tr>
+    }
+    </tbody>
+</table>
+

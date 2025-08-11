@@ -1,0 +1,160 @@
+@model QLHV.Models.Nguoi
+@{
+    ViewData["Title"] = "Thêm học viên Campuchia";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-success">
+            <i class="bi bi-person-plus me-2"></i>@ViewData["Title"]
+        </h2>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow border-0">
+                <div class="card-header bg-light py-3">
+                    <h5 class="card-title mb-0 text-success">
+                        <i class="bi bi-pencil-square me-2"></i>Thông tin học viên Campuchia mới
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger rounded p-2 bg-danger-subtle mb-4"></div>
+                        
+                        <!-- Hidden fields for required properties -->
+                        <input type="hidden" asp-for="LoaiNguoi" value="HocVien" />
+                        <input type="hidden" asp-for="QuocTich" value="Campuchia" />
+                        
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <h6 class="border-bottom pb-2 mb-3 text-secondary">Thông tin cơ bản</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="MaNguoi" class="form-control" value="@ViewBag.NextMaNguoi" readonly />
+                                    <label asp-for="MaNguoi">Mã học viên <span class="text-danger">*</span></label>
+                                    <span asp-validation-for="MaNguoi" class="text-danger"></span>
+                                    <small class="form-text text-muted">Mã được tạo tự động</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="HoTen" class="form-control" placeholder="Họ và tên" />
+                                    <label asp-for="HoTen">Họ và tên <span class="text-danger">*</span></label>
+                                    <span asp-validation-for="HoTen" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="NgaySinh" type="date" class="form-control" placeholder="Ngày sinh" />
+                                    <label asp-for="NgaySinh">Ngày sinh</label>
+                                    <span asp-validation-for="NgaySinh" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <h6 class="border-bottom pb-2 mb-3 text-secondary">Thông tin chuyên môn</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="CapBac" class="form-control" placeholder="Cấp bậc" />
+                                    <label asp-for="CapBac">Cấp bậc</label>
+                                    <span asp-validation-for="CapBac" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select asp-for="MaTrinhDo" class="form-select" asp-items="ViewBag.MaTrinhDo" aria-label="Chọn trình độ">
+                                        <option value="">-- Chọn trình độ --</option>
+                                    </select>
+                                    <label asp-for="MaTrinhDo">Trình độ</label>
+                                    <span asp-validation-for="MaTrinhDo" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="ChuyenNganh" class="form-control" placeholder="Chuyên ngành đào tạo" />
+                                    <label asp-for="ChuyenNganh">Chuyên ngành đào tạo</label>
+                                    <span asp-validation-for="ChuyenNganh" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="KhoaHoc" class="form-control" placeholder="Khóa học" />
+                                    <label asp-for="KhoaHoc">Khóa học</label>
+                                    <span asp-validation-for="KhoaHoc" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <h6 class="border-bottom pb-2 mb-3 text-secondary">Thông tin học tập</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="NgayNhapHoc" type="date" class="form-control" placeholder="Ngày nhập học" />
+                                    <label asp-for="NgayNhapHoc">Ngày nhập học</label>
+                                    <span asp-validation-for="NgayNhapHoc" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="NgayTotNghiep" type="date" class="form-control" placeholder="Ngày tốt nghiệp" />
+                                    <label asp-for="NgayTotNghiep">Ngày tốt nghiệp</label>
+                                    <span asp-validation-for="NgayTotNghiep" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <h6 class="border-bottom pb-2 mb-3 text-secondary">Thông tin Đảng</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select asp-for="MaLoaiDangVien" class="form-select" asp-items="ViewBag.MaLoaiDangVien" aria-label="Chọn loại đảng viên">
+                                        <option value="">-- Chọn loại đảng viên --</option>
+                                    </select>
+                                    <label asp-for="MaLoaiDangVien">Loại đảng viên</label>
+                                    <span asp-validation-for="MaLoaiDangVien" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="NgayVaoDangDuBi" type="date" class="form-control" placeholder="Ngày vào Đảng dự bị" />
+                                    <label asp-for="NgayVaoDangDuBi">Ngày vào Đảng dự bị</label>
+                                    <span asp-validation-for="NgayVaoDangDuBi" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="NgayVaoDangChinhThuc" type="date" class="form-control" placeholder="Ngày vào Đảng chính thức" />
+                                    <label asp-for="NgayVaoDangChinhThuc">Ngày vào Đảng chính thức</label>
+                                    <span asp-validation-for="NgayVaoDangChinhThuc" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-4">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong> Quốc tịch sẽ được tự động đặt là "Campuchia".
+                        </div>
+                        
+                        <input type="hidden" asp-for="LoaiNguoi" value="HocVien" />
+                        
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="bi bi-check-circle me-1"></i>Lưu
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-x-circle me-1"></i>Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,31 @@
+﻿@model IEnumerable<QLHV.Models.PhongTraoThiDua>
+@{
+    ViewData["Title"] = "Phong trào thi đua";
+}
+<h2>@ViewData["Title"]</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Tên</th>
+            <th>Bắt đầu</th>
+            <th>Kết thúc</th>
+            <th>% thưởng</th>
+            <th>Mô tả</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var p in Model)
+    {
+        <tr>
+            <td>@p.MaPttd</td>
+            <td>@p.TenPhongTrao</td>
+            <td>@p.ThoiGianBatDau</td>
+            <td>@p.ThoiGianKetThuc</td>
+            <td>@p.PhanTramKhenThuong</td>
+            <td>@p.MoTa</td>
+        </tr>
+    }
+    </tbody>
+</table>
+

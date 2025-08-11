@@ -1,0 +1,237 @@
+@model QLHV.Models.User
+
+@{
+    ViewData["Title"] = "Sửa người dùng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-pencil-square text-primary me-2"></i>
+                        Sửa thông tin người dùng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <h6 class="alert-heading">Có lỗi xảy ra:</h6>
+                                <ul class="mb-0">
+                                    @foreach (var modelState in ViewData.ModelState.Values)
+                                    {
+                                        foreach (var error in modelState.Errors)
+                                        {
+                                            <li>@error.ErrorMessage</li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                        }
+                        <input type="hidden" asp-for="MaUser" />
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Username" class="form-label">
+                                        <i class="bi bi-person me-1"></i>Tên đăng nhập <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Username" class="form-control" placeholder="Nhập tên đăng nhập" />
+                                    <span asp-validation-for="Username" class="text-danger"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="MaNguoi" class="form-label">
+                                        <i class="bi bi-person-badge me-1"></i>Chọn người (Họ tên - Chức vụ - Loại) <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="MaNguoi" class="form-select" asp-items="ViewBag.MaNguoi">
+                                        <option value="">-- Chọn người --</option>
+                                    </select>
+                                    <span asp-validation-for="MaNguoi" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="NewPassword" class="form-label">
+                                        <i class="bi bi-lock me-1"></i>Mật khẩu mới
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" placeholder="Để trống nếu không đổi mật khẩu" id="newPassword" name="NewPassword" />
+                                        <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>Chỉ nhập nếu muốn thay đổi mật khẩu
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="ConfirmNewPassword" class="form-label">
+                                        <i class="bi bi-lock-fill me-1"></i>Xác nhận mật khẩu mới
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" placeholder="Nhập lại mật khẩu mới" id="confirmNewPassword" />
+                                        <button class="btn btn-outline-secondary" type="button" id="toggleConfirmNewPassword">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <span id="newPasswordMatch" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="MaRole" class="form-label">
+                                        <i class="bi bi-shield me-1"></i>Vai trò <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="MaRole" class="form-select" asp-items="ViewBag.MaRole">
+                                        <option value="">-- Chọn vai trò --</option>
+                                    </select>
+                                    <span asp-validation-for="MaRole" class="text-danger"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-toggle-on me-1"></i>Trạng thái
+                                    </label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="Active" name="Active" value="true" @(Model.Active == true ? "checked" : "") />
+                                        <label class="form-check-label" for="Active">
+                                            Kích hoạt tài khoản
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-left me-1"></i>Quay lại
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-circle me-1"></i>Cập nhật
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 0.375rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Toggle password visibility
+            $('#toggleNewPassword').click(function() {
+                const passwordField = $('#newPassword');
+                const icon = $(this).find('i');
+                
+                if (passwordField.attr('type') === 'password') {
+                    passwordField.attr('type', 'text');
+                    icon.removeClass('bi-eye').addClass('bi-eye-slash');
+                } else {
+                    passwordField.attr('type', 'password');
+                    icon.removeClass('bi-eye-slash').addClass('bi-eye');
+                }
+            });
+            
+            $('#toggleConfirmNewPassword').click(function() {
+                const confirmPasswordField = $('#confirmNewPassword');
+                const icon = $(this).find('i');
+                
+                if (confirmPasswordField.attr('type') === 'password') {
+                    confirmPasswordField.attr('type', 'text');
+                    icon.removeClass('bi-eye').addClass('bi-eye-slash');
+                } else {
+                    confirmPasswordField.attr('type', 'password');
+                    icon.removeClass('bi-eye-slash').addClass('bi-eye');
+                }
+            });
+            
+            // Password confirmation validation
+            $('#confirmNewPassword').on('input', function() {
+                const newPassword = $('#newPassword').val();
+                const confirmNewPassword = $(this).val();
+                const matchSpan = $('#newPasswordMatch');
+                
+                if (newPassword !== '' && confirmNewPassword !== '') {
+                    if (newPassword === confirmNewPassword) {
+                        matchSpan.text('✓ Mật khẩu khớp').removeClass('text-danger').addClass('text-success');
+                    } else {
+                        matchSpan.text('✗ Mật khẩu không khớp').removeClass('text-success').addClass('text-danger');
+                    }
+                } else {
+                    matchSpan.text('');
+                }
+            });
+            
+            // Form validation
+            $('form').submit(function(e) {
+                const newPassword = $('#newPassword').val();
+                const confirmNewPassword = $('#confirmNewPassword').val();
+                
+                if (newPassword !== '' && newPassword !== confirmNewPassword) {
+                    e.preventDefault();
+                    alert('Mật khẩu xác nhận không khớp!');
+                    return false;
+                }
+            });
+        });
+    </script>
+}

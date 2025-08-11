@@ -1,0 +1,103 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using QLHV.Models;
+
+namespace QLHV.Controllers;
+
+public class DangVienController : Controller
+{
+    private readonly QlhvContext _context;
+
+    public DangVienController(QlhvContext context)
+    {
+        _context = context;
+    }
+
+    // GET: DangVien
+    public async Task<IActionResult> Index()
+    {
+        await PopulateDropDownListsAsync();
+        return View();
+    }
+
+    // GET: DangVien/GetData - For DataTables AJAX
+    public async Task<IActionResult> GetData()
+    {
+        // Get party members from NhanVien
+        var nhanVienDangVien = await _context.NhanViens
+            .Where(n => n.MaLoaiDangVien != null)
+            .Include(n => n.MaTrinhDoNavigation)
+            .Include(n => n.MaLoaiDangVienNavigation)
+            .Include(n => n.KhenThuongs)
+            .Include(n => n.KyLuats)
+            .Select(n => new
+            {
+                Id = n.MaNhanVien.ToString(),
+                Loai = "Nhân viên",
+                n.HoTen,
+                NgaySinh = n.NgaySinh.HasValue ? n.NgaySinh.Value.ToString("dd/MM/yyyy") : "",
+                n.CapBac,
+                n.ChucVu,
+                LoaiDangVien = n.MaLoaiDangVienNavigation != null ? n.MaLoaiDangVienNavigation.TenLoai : "",
+                TrinhDo = n.MaTrinhDoNavigation != null ? n.MaTrinhDoNavigation.TenTrinhDo : "",
+                n.TruongHoc,
+                n.QuaTruong,
+                NamNhapNgu = n.NamNhapNgu.HasValue ? n.NamNhapNgu.Value.ToString("dd/MM/yyyy") : "",
+                NgayVaoDangChinhThuc = n.NgayVaoDangChinhThuc.HasValue ? n.NgayVaoDangChinhThuc.Value.ToString("dd/MM/yyyy") : "",
+                NgayVaoDangDuBi = n.NgayVaoDangDuBi.HasValue ? n.NgayVaoDangDuBi.Value.ToString("dd/MM/yyyy") : "",
+                KhenThuong = n.KhenThuongs.Count,
+                KyLuat = n.KyLuats.Count,
+                QuocTich = "",
+                ChuyenNganh = "",
+                KhoaHoc = "",
+                NgayNhapHoc = "",
+                NgayTotNghiep = "",
+                KetQuaHocTap = 0
+            })
+            .ToListAsync();
+
+        // Get party members from HocVien
+        var hocVienDangVien = await _context.HocViens
+            .Where(h => h.MaLoaiDangVien != null)
+            .Include(h => h.MaTrinhDoNavigation)
+            .Include(h => h.MaLoaiDangVienNavigation)
+            .Include(h => h.KetQuaHocTaps)
+            .Select(h => new
+            {
+                Id = h.MaHocVien.ToString(),
+                Loai = "Học viên",
+                h.HoTen,
+                NgaySinh = h.NgaySinh.HasValue ? h.NgaySinh.Value.ToString("dd/MM/yyyy") : "",
+                h.CapBac,
+                ChucVu = "",
+                LoaiDangVien = h.MaLoaiDangVienNavigation != null ? h.MaLoaiDangVienNavigation.TenLoai : "",
+                TrinhDo = h.MaTrinhDoNavigation != null ? h.MaTrinhDoNavigation.TenTrinhDo : "",
+                TruongHoc = "",
+                QuaTruong = "",
+                NamNhapNgu = "",
+                NgayVaoDangChinhThuc = h.NgayVaoDangChinhThuc.HasValue ? h.NgayVaoDangChinhThuc.Value.ToString("dd/MM/yyyy") : "",
+                NgayVaoDangDuBi = h.NgayVaoDangDuBi.HasValue ? h.NgayVaoDangDuBi.Value.ToString("dd/MM/yyyy") : "",
+                KhenThuong = 0,
+                KyLuat = 0,
+                h.QuocTich,
+                h.ChuyenNganh,
+                h.KhoaHoc,
+                NgayNhapHoc = h.NgayNhapHoc.HasValue ? h.NgayNhapHoc.Value.ToString("dd/MM/yyyy") : "",
+                NgayTotNghiep = h.NgayTotNghiep.HasValue ? h.NgayTotNghiep.Value.ToString("dd/MM/yyyy") : "",
+                KetQuaHocTap = h.KetQuaHocTaps.Count
+            })
+            .ToListAsync();
+
+        // Combine both lists
+        var allDangVien = nhanVienDangVien.Cast<object>().Concat(hocVienDangVien.Cast<object>()).ToList();
+
+        return Json(new { data = allDangVien });
+    }
+
+    private async Task PopulateDropDownListsAsync()
+    {
+        ViewBag.MaTrinhDo = new SelectList(await _context.TrinhDos.ToListAsync(), "MaTrinhDo", "TenTrinhDo");
+        ViewBag.MaLoaiDangVien = new SelectList(await _context.LoaiDangViens.ToListAsync(), "MaLoaiDangVien", "TenLoai");
+    }
+}

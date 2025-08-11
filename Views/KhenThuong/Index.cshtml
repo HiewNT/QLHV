@@ -1,0 +1,289 @@
+@{
+    ViewData["Title"] = "Khen thưởng";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1 text-success">
+                        <i class="bi bi-award me-3"></i>@ViewData["Title"]
+                    </h2>
+                    <p class="text-muted mb-0">Quản lý các loại khen thưởng và danh sách người được khen thưởng</p>
+                </div>
+                <a asp-action="Create" class="btn btn-success btn-lg px-4">
+                    <i class="bi bi-plus-circle me-2"></i>Thêm khen thưởng mới
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-award text-success fs-1"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-success mb-1" id="totalKhenThuong">-</h4>
+                    <p class="text-muted mb-0">Tổng khen thưởng</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-people text-primary fs-1"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-primary mb-1" id="totalNguoiDuocKhen">-</h4>
+                    <p class="text-muted mb-0">Người được khen</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-star text-info fs-1"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-info mb-1" id="capKhenThuongCao">-</h4>
+                    <p class="text-muted mb-0">Cấp cao nhất</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-calendar-event text-warning fs-1"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-warning mb-1" id="namHienTai">-</h4>
+                    <p class="text-muted mb-0">Năm hiện tại</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Table Card -->
+    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="card-header bg-white border-0 py-3" style="border-radius: 15px 15px 0 0;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-success">
+                    <i class="bi bi-table me-2"></i>Danh sách khen thưởng
+                </h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-success btn-sm" onclick="table.ajax.reload()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Làm mới
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="khenThuongTable" class="table table-hover mb-0" style="width:100%">
+                    <thead class="table-success">
+                        <tr>
+                            <th class="text-center" style="width: 80px">Mã</th>
+                            <th>Tên khen thưởng</th>
+                            <th class="text-center" style="width: 150px">Cấp khen thưởng</th>
+                            <th class="text-center" style="width: 120px">Số người được khen</th>
+                            <th class="text-center" style="width: 150px">Thao tác</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        let table;
+        
+        $(document).ready(function() {
+            table = $('#khenThuongTable').DataTable({
+                ajax: {
+                    url: '@Url.Action("GetData")',
+                    type: 'GET',
+                    datatype: 'json',
+                    dataSrc: function(json) {
+                        updateStatistics(json.data);
+                        return json.data;
+                    }
+                },
+                columns: [
+                    { 
+                        data: 'maKhenThuong',
+                        className: 'text-center fw-bold'
+                    },
+                    { 
+                        data: 'tenKhenThuong',
+                        className: 'fw-semibold'
+                    },
+                    { 
+                        data: 'capKhenThuong',
+                        className: 'text-center',
+                        render: function(data) {
+                            if (!data) return '<span class="text-muted">-</span>';
+                            let badgeClass = 'bg-secondary';
+                            if (data.includes('Cấp Nhà nước') || data.includes('Quốc gia')) badgeClass = 'bg-danger';
+                            else if (data.includes('Cấp Bộ') || data.includes('Tỉnh')) badgeClass = 'bg-warning';
+                            else if (data.includes('Cấp Trường') || data.includes('Huyện')) badgeClass = 'bg-info';
+                            else badgeClass = 'bg-success';
+                            
+                            return `<span class="badge ${badgeClass}">${data}</span>`;
+                        }
+                    },
+                    { 
+                        data: 'soNguoiDuocKhen',
+                        className: 'text-center',
+                        render: function(data) {
+                            return data > 0 ? `<span class="badge bg-primary fs-6">${data}</span>` : '<span class="badge bg-secondary">0</span>';
+                        }
+                    },
+                    {
+                        data: 'maKhenThuong',
+                        orderable: false,
+                        className: 'text-center',
+                        render: function(data) {
+                            return `
+                                <div class="btn-group btn-group-sm">
+                                    <a href="@Url.Action("Details")/${data}" class="btn btn-outline-success" title="Xem chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="@Url.Action("Edit")/${data}" class="btn btn-outline-warning" title="Sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="@Url.Action("Delete")/${data}" class="btn btn-outline-danger" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>`;
+                        }
+                    }
+                ],
+                "language": {
+                    "sProcessing": "Đang xử lý...",
+                    "sLengthMenu": "Xem _MENU_ mục",
+                    "sZeroRecords": "Không tìm thấy dữ liệu",
+                    "sInfo": "Đang xem _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                    "sInfoEmpty": "Đang xem 0 đến 0 trong tổng số 0 mục",
+                    "sInfoFiltered": "(được lọc từ _MAX_ mục)",
+                    "sInfoPostFix": "",
+                    "sSearch": "Tìm kiếm:",
+                    "sUrl": "",
+                    "oPaginate": {
+                        "sFirst": "Đầu",
+                        "sPrevious": "Trước",
+                        "sNext": "Tiếp",
+                        "sLast": "Cuối"
+                    }
+                },
+                pageLength: 10,
+                order: [[0, 'desc']],
+                responsive: true,
+                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                     '<"row"<"col-sm-12"tr>>' +
+                     '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                drawCallback: function() {
+                    // Thêm hiệu ứng hover cho các nút
+                    $('.btn-group .btn').hover(
+                        function() { $(this).addClass('shadow-sm'); },
+                        function() { $(this).removeClass('shadow-sm'); }
+                    );
+                }
+            });
+        });
+
+        function updateStatistics(data) {
+            const totalKhenThuong = data.length;
+            const totalNguoiDuocKhen = data.reduce((sum, item) => sum + (item.soNguoiDuocKhen || 0), 0);
+            
+            // Tìm cấp khen thưởng cao nhất
+            const capKhenThuongCao = data.length > 0 ? data[0].capKhenThuong || 'Chưa có' : 'Chưa có';
+            
+            // Lấy năm hiện tại
+            const namHienTai = new Date().getFullYear();
+
+            $('#totalKhenThuong').text(totalKhenThuong);
+            $('#totalNguoiDuocKhen').text(totalNguoiDuocKhen);
+            $('#capKhenThuongCao').text(capKhenThuongCao);
+            $('#namHienTai').text(namHienTai);
+        }
+    </script>
+}
+
+<style>
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        background-color: #d1e7dd !important;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+    }
+    
+    .btn-group .btn {
+        border-radius: 6px !important;
+    }
+    
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 6px;
+        margin: 0 2px;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: #198754 !important;
+        border-color: #198754 !important;
+    }
+    
+    .rounded-circle {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style> 

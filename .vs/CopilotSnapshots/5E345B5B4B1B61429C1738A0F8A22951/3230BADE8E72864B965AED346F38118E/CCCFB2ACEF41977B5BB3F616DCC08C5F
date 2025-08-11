@@ -1,0 +1,90 @@
+﻿@{
+    ViewData["Title"] = "Khen thưởng & Kỷ luật";
+    var khenThuongs = (IEnumerable<QLHV.Models.KhenThuong>)ViewBag.KhenThuongs;
+    var kyLuats = (IEnumerable<QLHV.Models.KyLuat>)ViewBag.KyLuats;
+}
+<h2>@ViewData["Title"]</h2>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">Khen thưởng</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="khenThuongTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Mã</th>
+                                <th>Nhân viên</th>
+                                <th>Ngày</th>
+                                <th>Cấp</th>
+                                <th>Lý do</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var k in khenThuongs)
+                        {
+                            <tr>
+                                <td>@k.MaKhenThuong</td>
+                                <td>@k.MaNhanVienNavigation?.HoTen</td>
+                                <td>@k.NgayKhenThuong?.ToString("dd/MM/yyyy")</td>
+                                <td>@k.CapKhenThuong</td>
+                                <td>@k.LyDo</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">Kỷ luật</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="kyLuatTable" class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Mã</th>
+                                <th>Nhân viên</th>
+                                <th>Ngày</th>
+                                <th>Mức độ</th>
+                                <th>Lý do</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var k in kyLuats)
+                        {
+                            <tr>
+                                <td>@k.MaKyLuat</td>
+                                <td>@k.MaNhanVienNavigation?.HoTen</td>
+                                <td>@k.NgayKyLuat?.ToString("dd/MM/yyyy")</td>
+                                <td>@k.MucDo</td>
+                                <td>@k.LyDo</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#khenThuongTable').DataTable({
+                language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json' },
+                pageLength: 10
+            });
+            $('#kyLuatTable').DataTable({
+                language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json' },
+                pageLength: 10
+            });
+        });
+    </script>
+}
+

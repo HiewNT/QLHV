@@ -1,0 +1,399 @@
+@model QLHV.Models.User
+
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+}
+
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        border: 3px solid rgba(255,255,255,0.3);
+    }
+    
+    .info-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        margin-bottom: 1rem;
+        height: 100%;
+    }
+    
+    .info-card .card-header {
+        background: linear-gradient(45deg, #727cf5 0%, #8592fd 100%);
+        color: white;
+        border-radius: 10px 10px 0 0;
+        border: none;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+    }
+    
+    .info-item {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f8f9fa;
+        font-size: 0.9rem;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        min-width: 120px;
+    }
+    
+    .info-value {
+        color: #6c757d;
+    }
+    
+    .badge-custom {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 1.5rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.4rem;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #007bff;
+    }
+    
+    .timeline-item::after {
+        content: '';
+        position: absolute;
+        left: 3px;
+        top: 1rem;
+        width: 2px;
+        height: calc(100% + 0.25rem);
+        background: #e9ecef;
+    }
+    
+    .timeline-item:last-child::after {
+        display: none;
+    }
+    
+    .grade-card {
+        background: linear-gradient(45deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .grade-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    .compact-text {
+        font-size: 0.85rem;
+        line-height: 1.3;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <div class="profile-avatar">
+                    @Model.Username.Substring(0, 1).ToUpper()
+                </div>
+            </div>
+            <div class="col-md-7">
+                <h4 class="mb-1">@Model.MaNguoiNavigation?.HoTen</h4>
+                <p class="mb-1 opacity-75 compact-text">
+                    <i class="bi bi-person-badge me-1"></i>
+                    @Model.MaNguoiNavigation?.MaNguoi - @Model.MaNguoiNavigation?.LoaiNguoi
+                </p>
+                <p class="mb-1 opacity-75 compact-text">
+                    <i class="bi bi-shield me-1"></i>
+                    Vai trò: @Model.MaRoleNavigation?.TenRole
+                </p>
+                <p class="mb-0 opacity-75 compact-text">
+                    <i class="bi bi-person-circle me-1"></i>
+                    Tài khoản: @Model.Username
+                </p>
+            </div>
+            <div class="col-md-3 text-end">
+                <a asp-action="EditProfile" class="btn btn-light">
+                    <i class="bi bi-pencil-square me-1"></i>
+                    Sửa thông tin
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Thông tin cá nhân -->
+        <div class="col-lg-4">
+            <div class="card info-card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-person-lines-fill me-1"></i>
+                        Thông tin cá nhân
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="info-item d-flex">
+                        <span class="info-label">Họ và tên:</span>
+                        <span class="info-value">@Model.MaNguoiNavigation?.HoTen</span>
+                    </div>
+                    <div class="info-item d-flex">
+                        <span class="info-label">Mã người:</span>
+                        <span class="info-value">@Model.MaNguoiNavigation?.MaNguoi</span>
+                    </div>
+                    <div class="info-item d-flex">
+                        <span class="info-label">Loại người:</span>
+                        <span class="info-value">
+                            <span class="badge bg-primary badge-custom">@Model.MaNguoiNavigation?.LoaiNguoi</span>
+                        </span>
+                    </div>
+                    <div class="info-item d-flex">
+                        <span class="info-label">Ngày sinh:</span>
+                        <span class="info-value">@(Model.MaNguoiNavigation?.NgaySinh?.ToString("dd/MM/yyyy") ?? "N/A")</span>
+                    </div>
+                    <div class="info-item d-flex">
+                        <span class="info-label">Quốc tịch:</span>
+                        <span class="info-value">@(Model.MaNguoiNavigation?.QuocTich ?? "N/A")</span>
+                    </div>
+                    <div class="info-item d-flex">
+                        <span class="info-label">Chức vụ:</span>
+                        <span class="info-value">@(Model.MaNguoiNavigation?.ChucVu ?? "N/A")</span>
+                    </div>
+                    <div class="info-item d-flex">
+                        <span class="info-label">Cấp bậc:</span>
+                        <span class="info-value">@(Model.MaNguoiNavigation?.CapBac ?? "N/A")</span>
+                    </div>
+                    @if (Model.MaNguoiNavigation?.LoaiNguoi == "HocVien")
+                    {
+                        <div class="info-item d-flex">
+                            <span class="info-label">Chuyên ngành:</span>
+                            <span class="info-value">@(Model.MaNguoiNavigation?.ChuyenNganh ?? "N/A")</span>
+                        </div>
+                        <div class="info-item d-flex">
+                            <span class="info-label">Khóa học:</span>
+                            <span class="info-value">@(Model.MaNguoiNavigation?.KhoaHoc ?? "N/A")</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin tài khoản -->
+        <div class="col-lg-4">
+            <div class="card info-card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-shield-lock me-1"></i>
+                        Thông tin tài khoản
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="info-item d-flex">
+                        <span class="info-label">Tên đăng nhập:</span>
+                        <span class="info-value">@Model.Username</span>
+                    </div>
+                    <div class="info-item d-flex">
+                        <span class="info-label">Vai trò:</span>
+                        <span class="info-value">
+                            <span class="badge bg-@(Model.MaRole == 1 ? "danger" : Model.MaRole == 2 ? "warning" : "info") badge-custom">
+                                @Model.MaRoleNavigation?.TenRole
+                            </span>
+                        </span>
+                    </div>
+                    <div class="info-item d-flex">
+                        <span class="info-label">Trạng thái:</span>
+                        <span class="info-value">
+                            @if (Model.Active == true)
+                            {
+                                <span class="badge bg-success badge-custom">
+                                    <i class="bi bi-check-circle me-1"></i>Hoạt động
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary badge-custom">
+                                    <i class="bi bi-x-circle me-1"></i>Không hoạt động
+                                </span>
+                            }
+                        </span>
+                    </div>
+                    <div class="info-item d-flex">
+                        <span class="info-label">Mô tả vai trò:</span>
+                        <span class="info-value compact-text">@(Model.MaRoleNavigation?.MoTa ?? "N/A")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kết quả học tập (nếu là học viên) -->
+        @{
+            var ketQuaCount = (ViewBag.KetQuaHocTap as List<QLHV.Models.KetQuaHocTap>)?.Count ?? 0;
+        }
+        @if (ketQuaCount > 0)
+        {
+            <div class="col-lg-4">
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="bi bi-journal-text me-1"></i>
+                            Kết quả học tập
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                                                 @{
+                             var ketQuaList = ViewBag.KetQuaHocTap as List<QLHV.Models.KetQuaHocTap>;
+                             var ketQuaToShow = ketQuaList?.Take(3).ToList() ?? new List<QLHV.Models.KetQuaHocTap>();
+                         }
+                         @foreach (var kq in ketQuaToShow)
+                         {
+                             <div class="grade-card">
+                                 <div class="d-flex justify-content-between align-items-center">
+                                     <div>
+                                         <h6 class="mb-1">Năm học @kq.NamHoc</h6>
+                                         @if (!string.IsNullOrEmpty(kq.GhiChu))
+                                         {
+                                             <small class="opacity-75">@kq.GhiChu</small>
+                                         }
+                                     </div>
+                                     <div class="text-end">
+                                         <div class="grade-number">@kq.DiemTrungBinh</div>
+                                         <small>Điểm TB</small>
+                                     </div>
+                                 </div>
+                             </div>
+                         }
+                         @if (ketQuaList?.Count > 3)
+                         {
+                             <div class="text-center mt-2">
+                                 <small class="text-muted">Và @(ketQuaList.Count - 3) kết quả khác</small>
+                             </div>
+                         }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row mt-3">
+        <!-- Khen thưởng -->
+        <div class="col-lg-6">
+            <div class="card info-card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-trophy-fill me-1"></i>
+                        Khen thưởng (@((ViewBag.KhenThuongs as List<QLHV.Models.KhenThuongNguoi>)?.Count ?? 0))
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @{
+                        var khenThuongList = ViewBag.KhenThuongs as List<QLHV.Models.KhenThuongNguoi>;
+                        var khenThuongToShow = khenThuongList?.Take(5).ToList() ?? new List<QLHV.Models.KhenThuongNguoi>();
+                    }
+                    @if (khenThuongToShow.Count > 0)
+                    {
+                        @foreach (var kt in khenThuongToShow)
+                        {
+                            <div class="timeline-item">
+                                <h6 class="mb-1">@kt.MaKhenThuongNavigation?.TenKhenThuong</h6>
+                                <p class="mb-1 text-muted">
+                                    <i class="bi bi-calendar me-1"></i>
+                                    @kt.NgayKhenThuong?.ToString("dd/MM/yyyy")
+                                </p>
+                                <p class="mb-0 small">@kt.LyDo</p>
+                            </div>
+                        }
+                        @if (khenThuongList?.Count > 5)
+                        {
+                            <div class="text-center mt-2">
+                                <small class="text-muted">Và @(khenThuongList.Count - 5) khen thưởng khác</small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-3">
+                            <i class="bi bi-inbox me-2"></i>
+                            Chưa có khen thưởng
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Kỷ luật -->
+        <div class="col-lg-6">
+            <div class="card info-card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        Kỷ luật (@((ViewBag.KyLuats as List<QLHV.Models.KyLuatNguoi>)?.Count ?? 0))
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @{
+                        var kyLuatList = ViewBag.KyLuats as List<QLHV.Models.KyLuatNguoi>;
+                        var kyLuatToShow = kyLuatList?.Take(5).ToList() ?? new List<QLHV.Models.KyLuatNguoi>();
+                    }
+                    @if (kyLuatToShow.Count > 0)
+                    {
+                        @foreach (var kl in kyLuatToShow)
+                        {
+                            <div class="timeline-item">
+                                <h6 class="mb-1">@kl.MaKyLuatNavigation?.TenKyLuat</h6>
+                                <p class="mb-1 text-muted">
+                                    <i class="bi bi-calendar me-1"></i>
+                                    @kl.NgayKyLuat?.ToString("dd/MM/yyyy")
+                                </p>
+                                <p class="mb-0 small">@kl.LyDo</p>
+                            </div>
+                        }
+                        @if (kyLuatList?.Count > 5)
+                        {
+                            <div class="text-center mt-2">
+                                <small class="text-muted">Và @(kyLuatList.Count - 5) kỷ luật khác</small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center py-3">
+                            <i class="bi bi-inbox me-2"></i>
+                            Chưa có kỷ luật
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

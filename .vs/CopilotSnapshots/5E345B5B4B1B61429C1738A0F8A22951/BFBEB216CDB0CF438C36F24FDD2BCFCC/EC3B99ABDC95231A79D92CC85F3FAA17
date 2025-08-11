@@ -1,0 +1,57 @@
+﻿@{
+    ViewData["Title"] = "Khen thưởng & Kỷ luật";
+    var khenThuongs = (IEnumerable<QLHV.Models.KhenThuong>)ViewBag.KhenThuongs;
+    var kyLuats = (IEnumerable<QLHV.Models.KyLuat>)ViewBag.KyLuats;
+}
+<h2>@ViewData["Title"]</h2>
+
+<h4>Khen thưởng</h4>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Nhân viên</th>
+            <th>Ngày</th>
+            <th>Cấp</th>
+            <th>Lý do</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var k in khenThuongs)
+    {
+        <tr>
+            <td>@k.MaKhenThuong</td>
+            <td>@k.MaNhanVienNavigation?.HoTen</td>
+            <td>@k.NgayKhenThuong</td>
+            <td>@k.CapKhenThuong</td>
+            <td>@k.LyDo</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h4>Kỷ luật</h4>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Nhân viên</th>
+            <th>Ngày</th>
+            <th>Mức độ</th>
+            <th>Lý do</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var k in kyLuats)
+    {
+        <tr>
+            <td>@k.MaKyLuat</td>
+            <td>@k.MaNhanVienNavigation?.HoTen</td>
+            <td>@k.NgayKyLuat</td>
+            <td>@k.MucDo</td>
+            <td>@k.LyDo</td>
+        </tr>
+    }
+    </tbody>
+</table>
+

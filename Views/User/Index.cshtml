@@ -1,0 +1,157 @@
+@model IEnumerable<QLHV.Models.User>
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people-fill text-primary me-2"></i>
+                        Quản lý người dùng
+                    </h5>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Thêm người dùng mới
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="userTable" class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên đăng nhập</th>
+                                    <th>Họ tên</th>
+                                    <th>Vai trò</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.MaUser</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="user-avatar me-2" style="width: 28px; height: 28px; font-size: 12px;">
+                                                    @item.Username.Substring(0, 1).ToUpper()
+                                                </div>
+                                                <span>@item.Username</span>
+                                            </div>
+                                        </td>
+                                        <td>@(item.MaNguoiNavigation?.HoTen ?? "N/A")</td>
+                                        <td>
+                                            <span class="badge bg-@(item.MaRole == 1 ? "danger" : item.MaRole == 2 ? "warning" : "info")">
+                                                @(item.MaRoleNavigation?.TenRole ?? "N/A")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (item.Active == true)
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle me-1"></i>Hoạt động
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">
+                                                    <i class="bi bi-x-circle me-1"></i>Không hoạt động
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a asp-action="Edit" asp-route-id="@item.MaUser" class="btn btn-outline-primary" title="Sửa">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a asp-action="Details" asp-route-id="@item.MaUser" class="btn btn-outline-info" title="Chi tiết">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.MaUser" class="btn btn-outline-danger" title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
+    <style>
+        .user-avatar {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+        }
+        
+        .btn-group-sm > .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#userTable').DataTable({
+                "language": {
+                    "sProcessing": "Đang xử lý...",
+                    "sLengthMenu": "Xem _MENU_ mục",
+                    "sZeroRecords": "Không tìm thấy dữ liệu",
+                    "sInfo": "Đang xem _START_ đến _END_ trong tổng số _TOTAL_ mục",
+                    "sInfoEmpty": "Đang xem 0 đến 0 trong tổng số 0 mục",
+                    "sInfoFiltered": "(được lọc từ _MAX_ mục)",
+                    "sInfoPostFix": "",
+                    "sSearch": "Tìm kiếm:",
+                    "sUrl": "",
+                    "oPaginate": {
+                        "sFirst": "Đầu",
+                        "sPrevious": "Trước",
+                        "sNext": "Tiếp",
+                        "sLast": "Cuối"
+                    }
+                },
+                "pageLength": 10,
+                "order": [[0, "desc"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": 5 }
+                ]
+            });
+        });
+    </script>
+}

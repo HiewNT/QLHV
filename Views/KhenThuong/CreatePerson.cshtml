@@ -1,0 +1,100 @@
+@model QLHV.Models.KhenThuongNguoi
+
+@{
+    ViewData["Title"] = "Thêm người khen thưởng";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-header bg-success text-white border-0" style="border-radius: 15px 15px 0 0;">
+                    <div class="d-flex align-items-center">
+                        <a asp-action="Details" asp-route-id="@ViewBag.MaKhenThuong" class="btn btn-outline-light btn-sm me-3">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-plus-circle me-2"></i>Thêm người khen thưởng
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Hiển thị thông tin khen thưởng -->
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading mb-2">
+                            <i class="bi bi-award me-2"></i>Thông tin khen thưởng
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Tên khen thưởng:</strong> @ViewBag.TenKhenThuong
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Cấp khen thưởng:</strong> @(ViewBag.CapKhenThuong ?? "Chưa cập nhật")
+                            </div>
+                        </div>
+                    </div>
+
+                    <form asp-action="AddPerson" method="post">
+                        <input type="hidden" name="maKhenThuong" value="@ViewBag.MaKhenThuong" />
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Người được khen thưởng <span class="text-danger">*</span></label>
+                                    <select name="maNguoi" class="form-select" required>
+                                        <option value="">-- Chọn người --</option>
+                                        @foreach (var nguoi in ViewBag.NguoiList ?? new List<Nguoi>())
+                                        {
+                                            <option value="@nguoi.MaNguoi">@nguoi.HoTen</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Ngày khen thưởng</label>
+                                    <input type="date" name="ngayKhenThuong" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Lý do khen thưởng</label>
+                            <textarea name="lyDo" class="form-control" rows="3" 
+                                      placeholder="Nhập lý do khen thưởng..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Details" asp-route-id="@ViewBag.MaKhenThuong" class="btn btn-secondary btn-lg px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg px-4">
+                                <i class="bi bi-plus-circle me-2"></i>Thêm người
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+</style>

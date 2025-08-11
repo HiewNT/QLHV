@@ -1,0 +1,73 @@
+@model QLHV.Models.PhongTraoThiDua
+@{
+    ViewData["Title"] = "Xóa phong trào thi đua";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">@ViewData["Title"]</h2>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Trở về
+    </a>
+</div>
+
+<div class="alert alert-danger">
+    <h5 class="alert-heading">Bạn có chắc chắn muốn xóa phong trào thi đua này?</h5>
+    <p class="mb-0">Hành động này không thể phục hồi.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card shadow border-0">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tên phong trào</label>
+                            <div>@Model.TenPhongTrao</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Thời gian bắt đầu</label>
+                            <div>@Model.ThoiGianBatDau?.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Thời gian kết thúc</label>
+                            <div>@Model.ThoiGianKetThuc?.ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">% khen thưởng</label>
+                            <div>@Model.PhanTramKhenThuong%</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mô tả</label>
+                            <div>@Model.MoTa</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <form asp-action="Delete">
+                            <input type="hidden" asp-for="MaPttd" />
+                            <button type="submit" class="btn btn-danger me-2">
+                                <i class="bi bi-trash"></i> Xác nhận xóa
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-x-lg"></i> Hủy bỏ
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

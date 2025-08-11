@@ -1,0 +1,67 @@
+@model QLHV.Models.PhongTraoThiDua
+@{
+    ViewData["Title"] = "Cập nhật phong trào thi đua";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">@ViewData["Title"]</h2>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Trở về
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card shadow border-0">
+            <div class="card-body">
+                <form asp-action="Edit" class="row g-3">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="MaPttd" />
+                    
+                    <div class="col-md-12">
+                        <label asp-for="TenPhongTrao" class="form-label">Tên phong trào</label>
+                        <input asp-for="TenPhongTrao" class="form-control" />
+                        <span asp-validation-for="TenPhongTrao" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ThoiGianBatDau" class="form-label">Thời gian bắt đầu</label>
+                        <input asp-for="ThoiGianBatDau" type="date" class="form-control" />
+                        <span asp-validation-for="ThoiGianBatDau" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ThoiGianKetThuc" class="form-label">Thời gian kết thúc</label>
+                        <input asp-for="ThoiGianKetThuc" type="date" class="form-control" />
+                        <span asp-validation-for="ThoiGianKetThuc" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="PhanTramKhenThuong" class="form-label">% khen thưởng</label>
+                        <input asp-for="PhanTramKhenThuong" type="number" min="0" max="100" class="form-control" />
+                        <span asp-validation-for="PhanTramKhenThuong" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="MoTa" class="form-label">Mô tả chi tiết</label>
+                        <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="MoTa" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-save"></i> Lưu lại
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-lg"></i> Hủy bỏ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

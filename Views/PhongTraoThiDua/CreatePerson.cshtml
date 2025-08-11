@@ -1,0 +1,110 @@
+@model QLHV.Models.NguoiDatDuocPttd
+
+@{
+    ViewData["Title"] = "Thêm người đạt được phong trào";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-header bg-info text-white border-0" style="border-radius: 15px 15px 0 0;">
+                    <div class="d-flex align-items-center">
+                        <a asp-action="Details" asp-route-id="@ViewBag.MaPttd" class="btn btn-outline-light btn-sm me-3">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-plus-circle me-2"></i>Thêm người đạt được phong trào
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Hiển thị thông tin phong trào thi đua -->
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading mb-2">
+                            <i class="bi bi-trophy me-2"></i>Thông tin phong trào thi đua
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Tên phong trào:</strong> @ViewBag.TenPhongTrao
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Phần trăm khen thưởng:</strong> @(ViewBag.PhanTramKhenThuong?.ToString() ?? "Chưa cập nhật")%
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <strong>Thời gian bắt đầu:</strong> @(ViewBag.ThoiGianBatDau?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Thời gian kết thúc:</strong> @(ViewBag.ThoiGianKetThuc?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(ViewBag.MoTa))
+                        {
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <strong>Mô tả:</strong> @ViewBag.MoTa
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <form asp-action="AddPerson" method="post">
+                        <input type="hidden" name="maPttd" value="@ViewBag.MaPttd" />
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Người đạt được phong trào <span class="text-danger">*</span></label>
+                                    <select name="maNguoi" class="form-select" required>
+                                        <option value="">-- Chọn người --</option>
+                                        @foreach (var nguoi in ViewBag.NguoiList ?? new List<Nguoi>())
+                                        {
+                                            <option value="@nguoi.MaNguoi">@nguoi.HoTen</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ghi chú</label>
+                            <textarea name="ghiChu" class="form-control" rows="3" 
+                                      placeholder="Nhập ghi chú về thành tích đạt được..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Details" asp-route-id="@ViewBag.MaPttd" class="btn btn-secondary btn-lg px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-info btn-lg px-4">
+                                <i class="bi bi-plus-circle me-2"></i>Thêm người
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+</style>

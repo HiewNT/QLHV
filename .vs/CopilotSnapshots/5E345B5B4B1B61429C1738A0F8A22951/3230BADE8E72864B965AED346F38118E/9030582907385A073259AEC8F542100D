@@ -1,0 +1,50 @@
+﻿@model IEnumerable<QLHV.Models.PhongTraoThiDua>
+@{
+    ViewData["Title"] = "Phong trào thi đua";
+}
+<h2>@ViewData["Title"]</h2>
+<div class="card shadow border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="phongTraoTable" class="table table-bordered table-striped align-middle" style="width:100%">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên</th>
+                        <th>Bắt đầu</th>
+                        <th>Kết thúc</th>
+                        <th>% thưởng</th>
+                        <th>Mô tả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>@p.MaPttd</td>
+                        <td>@p.TenPhongTrao</td>
+                        <td>@p.ThoiGianBatDau?.ToString("dd/MM/yyyy")</td>
+                        <td>@p.ThoiGianKetThuc?.ToString("dd/MM/yyyy")</td>
+                        <td>@p.PhanTramKhenThuong</td>
+                        <td>@p.MoTa</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#phongTraoTable').DataTable({
+                language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json' },
+                pageLength: 10
+            });
+        });
+    </script>
+}
+

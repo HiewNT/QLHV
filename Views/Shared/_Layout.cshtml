@@ -1,0 +1,413 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - QLHV</title>
+    @await RenderSectionAsync("Styles", required: false)
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --header-height: 60px;
+            --primary-color: #2c5aa0;
+            --secondary-color: #1e3a5f;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-brand {
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-decoration: none;
+        }
+
+        .sidebar-brand h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            transition: all 0.3s;
+            border-radius: 0;
+        }
+
+        .sidebar .nav-link:hover, 
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+            padding-left: 25px;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .sidebar-divider {
+            border-color: rgba(255,255,255,0.2);
+            margin: 10px 0;
+        }
+
+        .sidebar-header {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 15px 20px 5px;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .top-header {
+            background: #fff;
+            height: var(--header-height);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .top-header h5 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            writing-mode: horizontal-tb;
+            text-orientation: mixed;
+            direction: ltr;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .dropdown-menu {
+            margin-top: 0;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 100%;
+            font-size: 16px;
+        }
+
+        .dropdown-toggle {
+            border: 1px solid #dee2e6;
+            background: #fff;
+            color: #495057;
+            border-radius: 6px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-toggle:hover {
+            background: #659dd4;
+        }
+
+        .dropdown-item {
+            padding: 8px 16px;
+            font-size: 16px;
+            color: #495057;
+            transition: background-color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: var(--primary-color);
+        }
+
+        .dropdown-item-text {
+            padding: 8px 16px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .dropdown-divider {
+            margin: 4px 0;
+            border-color: #e9ecef;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 20px;
+        }
+
+        /* Responsive */
+        media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: block !important;
+            }
+        }
+
+        media (min-width: 769px) {
+            .mobile-toggle {
+                display: none !important;
+            }
+        }
+
+
+        .mobile-toggle {
+            border: none;
+            background: none;
+            color: #333;
+            font-size: 1.5rem;
+            padding: 8px;
+            margin-top: 5px;
+            width: 100%;
+            min-width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Responsive Design */
+        media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: block !important;
+            }
+        }
+
+        media (min-width: 769px) {
+            .mobile-toggle {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <a href="@Url.Action("Index", "Home")" class="sidebar-brand">
+            <h4><i class="bi bi-mortarboard-fill"></i> QLHV</h4>
+        </a>
+        
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="Home" asp-action="@(Context.Session.GetString("UserRole") == "Admin" ? "Index" : "Profile")">
+                    <i class="bi bi-house-door me-2"></i>
+                    Trang chủ
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <div class="sidebar-header">Hệ thống</div>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="User" asp-action="Index">
+                    <i class="bi bi-person-gear"></i> Quản lý người dùng
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <div class="sidebar-header">Danh mục</div>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="NhanVien" asp-action="Index">
+                    <i class="bi bi-people-fill"></i> Nhân viên HQT
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="HocVienLao" asp-action="Index">
+                    <i class="bi bi-flag-fill"></i> Học viên Lào
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="HocVienCam" asp-action="Index">
+                    <i class="bi bi-flag"></i> Học viên Cam
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="DangVien" asp-action="Index">
+                    <i class="bi bi-award-fill"></i> Đảng viên
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <div class="sidebar-header">Quản lý</div>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="KhenThuong" asp-action="Index">
+                    <i class="bi bi-trophy-fill"></i> Khen thưởng
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="KyLuat" asp-action="Index">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Kỷ luật
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="PhongTraoThiDua" asp-action="Index">
+                    <i class="bi bi-bullseye"></i> Phong trào thi đua
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="KetQuaHocTap" asp-action="Index">
+                    <i class="bi bi-journal-text"></i> Kết quả học tập
+                </a>
+            </li>
+            
+            
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="ThongKe" asp-action="Index">
+                    <i class="bi bi-bar-chart-fill"></i> Thống kê
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="top-header">
+            <div class="d-flex align-items-center">
+                <h5 class="mb-0">@ViewData["Title"]</h5>
+            </div>
+            
+            <div>
+                @if (Context.Session.GetString("UserId") != null)
+                {
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    @Context.Session.GetString("Username")?.Substring(0, 1).ToUpper()
+                                </div>
+                                <span>@Context.Session.GetString("UserFullName")</span>
+                            </div>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" asp-controller="Home" asp-action="Profile">
+                                <i class="bi bi-person-circle me-2"></i>Thông tin cá nhân
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">
+                                <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                            </a></li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <div class="btn-group">
+                        <a class="btn btn-primary" asp-controller="Account" asp-action="Login">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập
+                        </a>
+                        <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Register">
+                            <i class="bi bi-person-plus me-1"></i>Đăng ký
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content-area">
+            @RenderBody()
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+        
+        // Set active menu
+        $(document).ready(function() {
+            var currentPath = window.location.pathname.toLowerCase();
+            $('.sidebar .nav-link').each(function() {
+                var linkPath = $(this).attr('href');
+                if (linkPath && currentPath.includes(linkPath.toLowerCase())) {
+                    $(this).addClass('active');
+                }
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

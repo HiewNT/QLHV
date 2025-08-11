@@ -1,0 +1,195 @@
+@model QLHV.Models.User
+
+@{
+    ViewData["Title"] = "Xóa người dùng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Xác nhận xóa người dùng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            Cảnh báo!
+                        </h6>
+                        <p class="mb-0">
+                            Bạn có chắc chắn muốn xóa người dùng này không? Hành động này không thể hoàn tác.
+                        </p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <dl class="row">
+                                <dt class="col-sm-4">
+                                    <i class="bi bi-person me-1"></i>ID người dùng:
+                                </dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-secondary">@Model.MaUser</span>
+                                </dd>
+
+                                <dt class="col-sm-4">
+                                    <i class="bi bi-person-badge me-1"></i>Tên đăng nhập:
+                                </dt>
+                                <dd class="col-sm-8">
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar me-2" style="width: 32px; height: 32px; font-size: 14px;">
+                                            @Model.Username.Substring(0, 1).ToUpper()
+                                        </div>
+                                        <strong>@Model.Username</strong>
+                                    </div>
+                                </dd>
+
+                                <dt class="col-sm-4">
+                                    <i class="bi bi-person-lines-fill me-1"></i>Họ tên:
+                                </dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.MaNguoiNavigation != null)
+                                    {
+                                        <span>@Model.MaNguoiNavigation.HoTen</span>
+                                        <br>
+                                        <small class="text-muted">@Model.MaNguoiNavigation.MaNguoi</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Không có thông tin</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">
+                                    <i class="bi bi-shield me-1"></i>Vai trò:
+                                </dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.MaRoleNavigation != null)
+                                    {
+                                        <span class="badge bg-@(Model.MaRole == 1 ? "danger" : Model.MaRole == 2 ? "warning" : "info")">
+                                            @Model.MaRoleNavigation.TenRole
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Không có thông tin</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">
+                                    <i class="bi bi-toggle-on me-1"></i>Trạng thái:
+                                </dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.Active == true)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-x-circle me-1"></i>Không hoạt động
+                                        </span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card bg-light border-warning">
+                                <div class="card-header">
+                                    <h6 class="mb-0 text-warning">
+                                        <i class="bi bi-info-circle me-1"></i>Thông tin quan trọng
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2">
+                                            <i class="bi bi-check-circle text-success me-1"></i>
+                                            Tài khoản sẽ bị xóa vĩnh viễn
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="bi bi-check-circle text-success me-1"></i>
+                                            Người này có thể tạo tài khoản mới
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="bi bi-exclamation-triangle text-warning me-1"></i>
+                                            Dữ liệu khác không bị ảnh hưởng
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form asp-action="Delete" method="post" class="mt-4">
+                        <input type="hidden" asp-for="MaUser" />
+                        
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Quay lại
+                            </a>
+                            <div>
+                                <a asp-action="Edit" asp-route-id="@Model.MaUser" class="btn btn-primary me-2">
+                                    <i class="bi bi-pencil me-1"></i>Sửa thay vì xóa
+                                </a>
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash me-1"></i>Xác nhận xóa
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .card-header {
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .user-avatar {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        dt {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        dd {
+            margin-bottom: 0.5rem;
+        }
+        
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 0.375rem;
+        }
+        
+        .list-unstyled li {
+            font-size: 0.9rem;
+        }
+    </style>
+}

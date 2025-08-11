@@ -1,0 +1,64 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using QLHV.Models;
+
+namespace QLHV.Controllers;
+
+public class DangVienController : Controller
+{
+    private readonly QlhvContext _context;
+
+    public DangVienController(QlhvContext context)
+    {
+        _context = context;
+    }
+
+    // GET: DangVien
+    public IActionResult Index()
+    {
+        return View();
+    }
+
+    // GET: DangVien/GetData - For DataTables AJAX
+    public async Task<IActionResult> GetData()
+    {
+        var nhanVienDangVien = await _context.NhanViens
+            .Where(n => n.MaLoaiDangVien != null)
+            .Include(n => n.MaTrinhDoNavigation)
+            .Include(n => n.MaLoaiDangVienNavigation)
+            .Select(n => new {
+                Id = n.MaNhanVien,
+                Loai = "Nhân viên",
+                HoTen = n.HoTen,
+                NgaySinh = n.NgaySinh.HasValue ? n.NgaySinh.Value.ToString("dd/MM/yyyy") : "",
+                CapBac = n.CapBac,
+                ChucVu = n.ChucVu,
+                LoaiDangVien = n.MaLoaiDangVienNavigation != null ? n.MaLoaiDangVienNavigation.TenLoai : "",
+                TrinhDo = n.MaTrinhDoNavigation != null ? n.MaTrinhDoNavigation.TenTrinhDo : "",
+                NgayVaoDangChinhThuc = n.NgayVaoDangChinhThuc.HasValue ? n.NgayVaoDangChinhThuc.Value.ToString("dd/MM/yyyy") : "",
+                NgayVaoDangDuBi = n.NgayVaoDangDuBi.HasValue ? n.NgayVaoDangDuBi.Value.ToString("dd/MM/yyyy") : ""
+            })
+            .ToListAsync();
+
+        var hocVienDangVien = await _context.HocViens
+            .Where(h => h.MaLoaiDangVien != null)
+            .Include(h => h.MaTrinhDoNavigation)
+            .Include(h => h.MaLoaiDangVienNavigation)
+            .Select(h => new {
+                Id = h.MaHocVien,
+                Loai = "Học viên",
+                HoTen = h.HoTen,
+                NgaySinh = h.NgaySinh.HasValue ? h.NgaySinh.Value.ToString("dd/MM/yyyy") : "",
+                CapBac = h.CapBac,
+                ChucVu = "",
+                LoaiDangVien = h.MaLoaiDangVienNavigation != null ? h.MaLoaiDangVienNavigation.TenLoai : "",
+                TrinhDo = h.MaTrinhDoNavigation != null ? h.MaTrinhDoNavigation.TenTrinhDo : "",
+                NgayVaoDangChinhThuc = h.NgayVaoDangChinhThuc.HasValue ? h.NgayVaoDangChinhThuc.Value.ToString("dd/MM/yyyy") : "",
+                NgayVaoDangDuBi = h.NgayVaoDangDuBi.HasValue ? h.NgayVaoDangDuBi.Value.ToString("dd/MM/yyyy") : ""
+            })
+            .ToListAsync();
+
+        var allDangVien = nhanVienDangVien.Concat(hocVienDangVien).ToList();
+        return Json(new { data = allDangVien });
+    }
+}

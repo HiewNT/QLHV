@@ -1,0 +1,178 @@
+@model QLHV.Models.KyLuat
+
+@{
+    ViewData["Title"] = "Xóa loại kỷ luật";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-header bg-danger text-white border-0" style="border-radius: 15px 15px 0 0;">
+                    <div class="d-flex align-items-center">
+                        <a asp-action="Index" class="btn btn-outline-light btn-sm me-3">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-exclamation-triangle me-2"></i>@ViewData["Title"]
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Chú ý:</strong> Bạn có chắc chắn muốn xóa loại kỷ luật này không?
+                    </div>
+
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h6 class="text-primary fw-bold mb-3">
+                                <i class="bi bi-exclamation-triangle me-2"></i>Thông tin loại kỷ luật
+                            </h6>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold text-muted">Mã kỷ luật:</div>
+                                <div class="col-sm-8">
+                                    <span class="badge bg-primary fs-6">@Model.MaKyLuat</span>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold text-muted">Tên kỷ luật:</div>
+                                <div class="col-sm-8 fw-semibold">@Model.TenKyLuat</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4 fw-bold text-muted">Mức độ:</div>
+                                <div class="col-sm-8">
+                                    @if (!string.IsNullOrEmpty(Model.MucDo))
+                                    {
+                                        <span class="badge bg-warning">@Model.MucDo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa cập nhật</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.KyLuatNguois.Any())
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-x-circle me-2"></i>
+                            <strong>Không thể xóa!</strong> Loại kỷ luật này đã được áp dụng cho 
+                            <strong>@Model.KyLuatNguois.Count</strong> người.
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 class="text-primary fw-bold mb-3">
+                                <i class="bi bi-people me-2"></i>Danh sách người bị kỷ luật
+                            </h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-danger">
+                                        <tr>
+                                            <th>Mã người</th>
+                                            <th>Họ và tên</th>
+                                            <th>Ngày kỷ luật</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var kyLuatNguoi in Model.KyLuatNguois.Take(5))
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-secondary">@kyLuatNguoi.MaNguoi</span>
+                                                </td>
+                                                <td class="fw-semibold">@kyLuatNguoi.MaNguoiNavigation?.HoTen</td>
+                                                <td>
+                                                    @if (kyLuatNguoi.NgayKyLuat.HasValue)
+                                                    {
+                                                        @kyLuatNguoi.NgayKyLuat.Value.ToString("dd/MM/yyyy")
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Chưa cập nhật</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                        @if (Model.KyLuatNguois.Count > 5)
+                                        {
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">
+                                                    <em>... và @(Model.KyLuatNguois.Count - 5) người khác</em>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Loại kỷ luật này chưa được áp dụng cho ai, có thể xóa an toàn.
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg px-4">
+                            <i class="bi bi-arrow-left me-2"></i>Quay lại
+                        </a>
+                        
+                        @if (!Model.KyLuatNguois.Any())
+                        {
+                            <form asp-action="Delete" method="post" style="display: inline;">
+                                <input type="hidden" asp-for="MaKyLuat" />
+                                <button type="submit" class="btn btn-danger btn-lg px-4">
+                                    <i class="bi bi-trash me-2"></i>Xác nhận xóa
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <button class="btn btn-danger btn-lg px-4" disabled>
+                                <i class="bi bi-trash me-2"></i>Không thể xóa
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #f8f9ff !important;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style> 
