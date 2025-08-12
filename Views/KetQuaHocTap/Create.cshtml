@@ -187,15 +187,7 @@
             if (firstField) firstField.focus();
         });
         
-        // Debug info
-        console.log('Create View Debug:', {
-            model: @Html.Raw(Json.Serialize(Model)),
-            viewBag: {
-                maNguoi: @Html.Raw(Json.Serialize(ViewBag.MaNguoi)),
-                namHocOptions: @Html.Raw(Json.Serialize(ViewBag.NamHocOptions)),
-                nguoiQuocTichMap: @Html.Raw(ViewBag.NguoiQuocTichMap ?? "{}")
-            }
-        });
+        // Debug info (removed heavy JSON serialization to avoid circular references)
     </script>
 }
 

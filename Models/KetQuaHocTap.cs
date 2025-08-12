@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace QLHV.Models;
 
@@ -15,5 +16,6 @@ public partial class KetQuaHocTap
 
     public string? GhiChu { get; set; }
 
+    [ValidateNever]
     public virtual Nguoi MaNguoiNavigation { get; set; } = null!;
 }

@@ -65,7 +65,7 @@ public class KetQuaHocTapController : Controller
     // POST: KetQuaHocTap/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(KetQuaHocTap ketQua)
+    public async Task<IActionResult> Create(KetQuaHocTap model)
     {
         var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
         if (userRole != "Admin" && userRole != "LopTruongLao" && userRole != "LopTruongCam")
@@ -81,14 +81,14 @@ public class KetQuaHocTapController : Controller
             if (TryParseDecimalFlexible(raw, out var parsed))
             {
                 ModelState[nameof(KetQuaHocTap.DiemTrungBinh)]!.Errors.Clear();
-                ketQua.DiemTrungBinh = parsed;
+                model.DiemTrungBinh = parsed;
             }
         }
 
         // Kiểm tra trùng lặp MaNguoi + NamHoc
-        if (!string.IsNullOrWhiteSpace(ketQua.MaNguoi) && !string.IsNullOrWhiteSpace(ketQua.NamHoc))
+        if (!string.IsNullOrWhiteSpace(model.MaNguoi) && !string.IsNullOrWhiteSpace(model.NamHoc))
         {
-            var exists = await _context.KetQuaHocTaps.AnyAsync(k => k.MaNguoi == ketQua.MaNguoi && k.NamHoc == ketQua.NamHoc);
+            var exists = await _context.KetQuaHocTaps.AnyAsync(k => k.MaNguoi == model.MaNguoi && k.NamHoc == model.NamHoc);
             if (exists)
             {
                 ModelState.AddModelError(nameof(KetQuaHocTap.NamHoc), "Đã tồn tại kết quả cho học viên này trong năm học đã chọn");
@@ -97,9 +97,9 @@ public class KetQuaHocTapController : Controller
 
         // Kiểm tra quyền theo học viên chọn
         Nguoi? nguoi = null;
-        if (!string.IsNullOrWhiteSpace(ketQua.MaNguoi))
+        if (!string.IsNullOrWhiteSpace(model.MaNguoi))
         {
-            nguoi = await _context.Nguois.FirstOrDefaultAsync(n => n.MaNguoi == ketQua.MaNguoi);
+            nguoi = await _context.Nguois.FirstOrDefaultAsync(n => n.MaNguoi == model.MaNguoi);
             if (!CanAccessNguoi(nguoi, userRole))
             {
                 ModelState.AddModelError(nameof(KetQuaHocTap.MaNguoi), "Bạn không có quyền chọn học viên này");
@@ -108,11 +108,19 @@ public class KetQuaHocTapController : Controller
 
         if (!ModelState.IsValid)
         {
-            await PopulateNguoiSelectListForRole(userRole, ketQua.MaNguoi);
-            return View(ketQua);
+            await PopulateNguoiSelectListForRole(userRole, model.MaNguoi);
+            return View(model);
         }
 
-        _context.KetQuaHocTaps.Add(ketQua);
+        var entity = new KetQuaHocTap
+        {
+            MaNguoi = model.MaNguoi,
+            NamHoc = model.NamHoc,
+            DiemTrungBinh = model.DiemTrungBinh,
+            GhiChu = model.GhiChu
+        };
+
+        _context.KetQuaHocTaps.Add(entity);
         await _context.SaveChangesAsync();
         TempData["Success"] = "Thêm kết quả học tập thành công.";
         return RedirectToAction(nameof(Index));
@@ -147,11 +155,11 @@ public class KetQuaHocTapController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [ActionName("Edit")]
-    public async Task<IActionResult> EditPost(int id, KetQuaHocTap ketQua)
+    public async Task<IActionResult> EditPost(int id, KetQuaHocTap model)
     {
-        if (id != ketQua.MaKetQua) return NotFound();
+        if (id != model.MaKetQua) return NotFound();
 
-        var existingKetQua = await _context.KetQuaHocTaps
+        var ketQua = await _context.KetQuaHocTaps
             .Include(k => k.MaNguoiNavigation)
             .FirstOrDefaultAsync(k => k.MaKetQua == id);
         if (ketQua == null) return NotFound();
@@ -170,15 +178,15 @@ public class KetQuaHocTapController : Controller
             if (TryParseDecimalFlexible(raw, out var parsed))
             {
                 ModelState[nameof(KetQuaHocTap.DiemTrungBinh)]!.Errors.Clear();
-                ketQua.DiemTrungBinh = parsed;
+                model.DiemTrungBinh = parsed;
             }
         }
 
         // Kiểm tra trùng lặp MaNguoi + NamHoc (trừ bản ghi hiện tại)
-        if (!string.IsNullOrWhiteSpace(ketQua.MaNguoi) && !string.IsNullOrWhiteSpace(ketQua.NamHoc))
+        if (!string.IsNullOrWhiteSpace(model.MaNguoi) && !string.IsNullOrWhiteSpace(model.NamHoc))
         {
             var exists = await _context.KetQuaHocTaps
-                .AnyAsync(k => k.MaNguoi == ketQua.MaNguoi && k.NamHoc == ketQua.NamHoc && k.MaKetQua != id);
+                .AnyAsync(k => k.MaNguoi == model.MaNguoi && k.NamHoc == model.NamHoc && k.MaKetQua != id);
             if (exists)
             {
                 ModelState.AddModelError(nameof(KetQuaHocTap.NamHoc), "Đã tồn tại kết quả cho học viên này trong năm học đã chọn");
@@ -187,9 +195,9 @@ public class KetQuaHocTapController : Controller
 
         // Kiểm tra quyền theo học viên chọn (nếu đổi học viên)
         Nguoi? nguoi = null;
-        if (!string.IsNullOrWhiteSpace(ketQua.MaNguoi))
+        if (!string.IsNullOrWhiteSpace(model.MaNguoi))
         {
-            nguoi = await _context.Nguois.FirstOrDefaultAsync(n => n.MaNguoi == ketQua.MaNguoi);
+            nguoi = await _context.Nguois.FirstOrDefaultAsync(n => n.MaNguoi == model.MaNguoi);
             if (!CanAccessNguoi(nguoi, userRole))
             {
                 ModelState.AddModelError(nameof(KetQuaHocTap.MaNguoi), "Bạn không có quyền chọn học viên này");
@@ -198,14 +206,14 @@ public class KetQuaHocTapController : Controller
 
         if (!ModelState.IsValid)
         {
-            await PopulateNguoiSelectListForRole(userRole, ketQua.MaNguoi);
-            return View(ketQua);
+            await PopulateNguoiSelectListForRole(userRole, model.MaNguoi);
+            return View(model);
         }
 
-        existingKetQua.MaNguoi = ketQua.MaNguoi;
-        existingKetQua.NamHoc = ketQua.NamHoc;
-        existingKetQua.DiemTrungBinh = ketQua.DiemTrungBinh;
-        existingKetQua.GhiChu = ketQua.GhiChu;
+        ketQua.MaNguoi = model.MaNguoi;
+        ketQua.NamHoc = model.NamHoc;
+        ketQua.DiemTrungBinh = model.DiemTrungBinh;
+        ketQua.GhiChu = model.GhiChu;
 
         await _context.SaveChangesAsync();
         TempData["Success"] = "Cập nhật kết quả học tập thành công.";
