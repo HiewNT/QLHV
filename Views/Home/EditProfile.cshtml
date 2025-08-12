@@ -133,8 +133,71 @@
                                                value="@(Model.MaNguoiNavigation?.NgayTotNghiep?.ToString("yyyy-MM-dd"))" />
                                     </div>
                                 </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="bi bi-flag me-1"></i>Đoàn viên
+                                        </label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="DoanVien" id="doanVienSwitch" value="true"
+                                                   @(Model.MaNguoiNavigation?.DoanVien == true ? "checked" : "") />
+                                            <label class="form-check-label" for="doanVienSwitch">
+                                                Là đoàn viên
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         }
+
+                        <hr />
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-shield-lock me-1"></i>
+                                    Thông tin tài khoản
+                                </h6>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-person-badge me-1"></i>Tên đăng nhập
+                                    </label>
+                                    <input type="text" class="form-control" name="Username" value="@Model.Username" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-lock me-1"></i>Mật khẩu hiện tại
+                                    </label>
+                                    <input type="password" class="form-control" name="CurrentPassword" autocomplete="current-password" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-key me-1"></i>Mật khẩu mới
+                                    </label>
+                                    <input type="password" class="form-control" name="NewPassword" autocomplete="new-password" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-key-fill me-1"></i>Xác nhận mật khẩu mới
+                                    </label>
+                                    <input type="password" class="form-control" name="ConfirmPassword" autocomplete="new-password" />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted">Để trống các trường mật khẩu nếu bạn không muốn đổi mật khẩu.</small>
+                            </div>
+                        </div>
 
                         <div class="row">
                             <div class="col-12">

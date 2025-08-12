@@ -16,6 +16,13 @@ namespace QLHV.Controllers
         // GET: DangVien/Index
         public async Task<IActionResult> Index()
         {
+            // Kiểm tra quyền truy cập
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (string.IsNullOrEmpty(userRole))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             // Lấy danh sách loại người
             ViewData["LoaiNguois"] = new List<string>
             {
@@ -23,12 +30,21 @@ namespace QLHV.Controllers
                 "HocVien"
             };
 
-            // Lấy danh sách quốc tịch
-            ViewData["QuocTichs"] = new List<string>
+            // Lấy danh sách quốc tịch dựa trên role
+            var quocTichs = new List<string>();
+            if (userRole == "Admin")
             {
-                "Lào",
-                "Campuchia"
-            };
+                quocTichs.AddRange(new[] { "Lào", "Campuchia" });
+            }
+            else if (userRole == "LopTruongLao")
+            {
+                quocTichs.Add("Lào");
+            }
+            else if (userRole == "LopTruongCam")
+            {
+                quocTichs.Add("Campuchia");
+            }
+            ViewData["QuocTichs"] = quocTichs;
 
             // Lấy danh sách loại đảng viên (trừ Quần chúng)
             ViewData["LoaiDangViens"] = await _context.LoaiDangViens
@@ -36,16 +52,39 @@ namespace QLHV.Controllers
                 .Select(l => l.TenLoai)
                 .ToListAsync();
 
+            // Lưu role vào ViewBag để view có thể sử dụng
+            ViewBag.UserRole = userRole;
+
             return View();
         }
 
         // GET: DangVien/GetData
         public async Task<IActionResult> GetData(string? loaiNguoi = null, string? quocTich = null, string? loaiDangVien = null)
         {
+            // Kiểm tra quyền truy cập
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (string.IsNullOrEmpty(userRole))
+            {
+                return Json(new { data = new List<object>() });
+            }
+
             var query = _context.Nguois
                 .Include(n => n.MaLoaiDangVienNavigation)
                 .Where(n => n.MaLoaiDangVien != null && n.MaLoaiDangVienNavigation != null)
                 .Where(n => n.MaLoaiDangVienNavigation!.TenLoai != "Quần chúng");
+
+            // Áp dụng phân quyền theo role
+            if (userRole == "LopTruongLao")
+            {
+                // Chỉ hiển thị học viên Lào
+                query = query.Where(n => n.LoaiNguoi == "HocVien" && n.QuocTich == "Lào");
+            }
+            else if (userRole == "LopTruongCam")
+            {
+                // Chỉ hiển thị học viên Campuchia
+                query = query.Where(n => n.LoaiNguoi == "HocVien" && n.QuocTich == "Campuchia");
+            }
+            // Admin có thể xem tất cả, không cần lọc thêm
 
             // Lọc theo loại người
             if (!string.IsNullOrEmpty(loaiNguoi))
@@ -53,8 +92,8 @@ namespace QLHV.Controllers
                 query = query.Where(n => n.LoaiNguoi == loaiNguoi);
             }
 
-            // Lọc theo quốc tịch cho học viên
-            if (!string.IsNullOrEmpty(quocTich) && query.Any(n => n.LoaiNguoi == "HocVien"))
+            // Lọc theo quốc tịch cho học viên (chỉ áp dụng nếu là Admin)
+            if (!string.IsNullOrEmpty(quocTich) && userRole == "Admin" && query.Any(n => n.LoaiNguoi == "HocVien"))
             {
                 query = query.Where(n => n.QuocTich == quocTich);
             }
@@ -88,12 +127,26 @@ namespace QLHV.Controllers
         {
             if (id == null) return NotFound();
 
+            // Kiểm tra quyền truy cập
+            var userRole = HttpContext.Session.GetString("UserRole");
+            if (string.IsNullOrEmpty(userRole))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var hocVien = await _context.Nguois
                 .Include(h => h.MaLoaiDangVienNavigation)
                 .Include(h => h.MaTrinhDoNavigation)
                 .FirstOrDefaultAsync(h => h.MaNguoi == id);
 
             if (hocVien == null) return NotFound();
+
+            // Kiểm tra quyền truy cập vào học viên cụ thể
+            if (!CanAccessHocVien(hocVien, userRole))
+            {
+                TempData["Error"] = "Bạn không có quyền truy cập vào thông tin học viên này.";
+                return RedirectToAction("Index");
+            }
 
             ViewData["LoaiDangViens"] = new SelectList(
                 await _context.LoaiDangViens
@@ -112,6 +165,13 @@ namespace QLHV.Controllers
         {
             try
             {
+                // Kiểm tra quyền truy cập
+                var userRole = HttpContext.Session.GetString("UserRole");
+                if (string.IsNullOrEmpty(userRole))
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
                 Console.WriteLine("=== DangVien DetailsHocVien POST START ===");
                 Console.WriteLine($"ID from route: {id}");
                 Console.WriteLine($"ID from model: {nguoi?.MaNguoi}");
@@ -120,6 +180,20 @@ namespace QLHV.Controllers
                 {
                     Console.WriteLine("ID mismatch - returning NotFound");
                     return NotFound();
+                }
+
+                // Kiểm tra quyền truy cập vào học viên cụ thể
+                var existing = await _context.Nguois.FindAsync(id);
+                if (existing == null)
+                {
+                    Console.WriteLine("Existing record not found - returning NotFound");
+                    return NotFound();
+                }
+
+                if (!CanAccessHocVien(existing, userRole))
+                {
+                    TempData["Error"] = "Bạn không có quyền cập nhật thông tin học viên này.";
+                    return RedirectToAction("Index");
                 }
 
                 // Get form data directly
@@ -180,14 +254,6 @@ namespace QLHV.Controllers
                             Console.WriteLine($"  {key}: {string.Join(", ", errors.Select(e => e.ErrorMessage))}");
                         }
                     }
-                }
-
-                // Find existing record
-                var existing = await _context.Nguois.FindAsync(id);
-                if (existing == null)
-                {
-                    Console.WriteLine("Existing record not found - returning NotFound");
-                    return NotFound();
                 }
 
                 Console.WriteLine($"Existing record found: {existing.HoTen}");
@@ -265,6 +331,27 @@ namespace QLHV.Controllers
                 
                 return View(nguoi);
             }
+        }
+
+        // Helper method để kiểm tra quyền truy cập
+        private bool CanAccessHocVien(Nguoi hocVien, string userRole)
+        {
+            if (userRole == "Admin")
+            {
+                return true; // Admin có thể truy cập tất cả
+            }
+            else if (userRole == "LopTruongLao")
+            {
+                // LopTruongLao chỉ có thể truy cập học viên Lào
+                return hocVien.LoaiNguoi == "HocVien" && hocVien.QuocTich == "Lào";
+            }
+            else if (userRole == "LopTruongCam")
+            {
+                // LopTruongCam chỉ có thể truy cập học viên Campuchia
+                return hocVien.LoaiNguoi == "HocVien" && hocVien.QuocTich == "Campuchia";
+            }
+            
+            return false; // Các role khác không có quyền truy cập
         }
     }
 }

@@ -65,6 +65,21 @@
                         <dd>@(Model.NgayVaoDangDuBi?.ToString("dd/MM/yyyy") ?? "Chưa có thông tin")</dd>
                         <dt>Ngày vào Đảng chính thức:</dt>
                         <dd>@(Model.NgayVaoDangChinhThuc?.ToString("dd/MM/yyyy") ?? "Chưa có thông tin")</dd>
+                        <dt>Đoàn viên:</dt>
+                        <dd>
+                            @if (Model.DoanVien == true)
+                            {
+                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Có</span>
+                            }
+                            else if (Model.DoanVien == false)
+                            {
+                                <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Không</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-dark">Chưa có thông tin</span>
+                            }
+                        </dd>
                     </dl>
                 </div>
             </div>

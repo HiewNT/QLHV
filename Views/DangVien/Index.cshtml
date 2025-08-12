@@ -3,6 +3,7 @@
     var loaiNguois = ViewData["LoaiNguois"] as List<string> ?? new List<string>();
     var quocTichs = ViewData["QuocTichs"] as List<string> ?? new List<string>();
     var loaiDangViens = ViewData["LoaiDangViens"] as List<string> ?? new List<string>();
+    var userRole = ViewBag.UserRole as string ?? "";
 }
 
 <div class="container-fluid py-4">
@@ -11,44 +12,81 @@
             <h2 class="mb-1 text-primary fw-bold">
                 <i class="bi bi-people-fill me-2"></i>@ViewData["Title"]
             </h2>
-            <p class="text-muted mb-0">Quản lý thông tin đảng viên trong hệ thống</p>
+            <p class="text-muted mb-0">
+                @if (userRole == "Admin")
+                {
+                    <span>Quản lý thông tin đảng viên trong hệ thống</span>
+                }
+                else if (userRole == "LopTruongLao")
+                {
+                    <span>Quản lý thông tin đảng viên học viên Lào</span>
+                }
+                else if (userRole == "LopTruongCam")
+                {
+                    <span>Quản lý thông tin đảng viên học viên Campuchia</span>
+                }
+                else
+                {
+                    <span>Quản lý thông tin đảng viên trong hệ thống</span>
+                }
+            </p>
         </div>
     </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
 
     <div class="card shadow-sm border-0 mb-4" style="border-radius: 10px;">
         <div class="card-body py-3">
             <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold text-dark">
-                        <i class="bi bi-person-badge me-1"></i>Thành Phần
-                    </label>
-                    <select id="loaiNguoiFilter" class="form-select border-0 shadow-sm" style="border-radius: 8px; background-color: #f8f9fa;">
-                        <option value="">-- Tất cả --</option>
-                        @foreach(var loai in loaiNguois)
-                        {
-                            <option value="@loai">@(loai == "NhanVien" ? "Nhân viên" : "Học viên")</option>
-                        }
-                    </select>
-                </div>
+                @if (userRole == "Admin")
+                {
+                    <div class="col-md-4">
+
+                        <label class="form-label fw-semibold text-dark">
+                            <i class="bi bi-person-badge me-1"></i>Thành Phần
+                        </label>
+                        <select id="loaiNguoiFilter" class="form-select border-0 shadow-sm"
+                            style="border-radius: 8px; background-color: #f8f9fa;">
+                            <option value="">-- Tất cả --</option>
+                            @foreach (var loai in loaiNguois)
+                            {
+                                <option value="@loai">@(loai == "NhanVien" ? "Nhân viên" : "Học viên")</option>
+                            }
+                        </select>
+                    </div>
                 <div class="col-md-4">
                     <label class="form-label fw-semibold text-dark">
                         <i class="bi bi-flag me-1"></i>Quốc tịch học viên
                     </label>
-                    <select id="quocTichFilter" class="form-select border-0 shadow-sm" style="border-radius: 8px; background-color: #f8f9fa;" disabled>
+                    <select id="quocTichFilter" class="form-select border-0 shadow-sm"
+                        style="border-radius: 8px; background-color: #f8f9fa;" @if (userRole != "Admin") {
+                        <text>disabled</text>
+                                                }
+>
                         <option value="">-- Tất cả --</option>
-                        @foreach(var qt in quocTichs)
+                        @foreach (var qt in quocTichs)
                         {
                             <option value="@qt">@qt</option>
                         }
                     </select>
                 </div>
+                }
                 <div class="col-md-4">
                     <label class="form-label fw-semibold text-dark">
                         <i class="bi bi-award me-1"></i>Đảng viên
                     </label>
-                    <select id="loaiDangVienFilter" class="form-select border-0 shadow-sm" style="border-radius: 8px; background-color: #f8f9fa;">
+                    <select id="loaiDangVienFilter" class="form-select border-0 shadow-sm"
+                        style="border-radius: 8px; background-color: #f8f9fa;">
                         <option value="">-- Tất cả --</option>
-                        @foreach(var loai in loaiDangViens)
+                        @foreach (var loai in loaiDangViens)
                         {
                             <option value="@loai">@loai</option>
                         }
@@ -61,7 +99,23 @@
     <div class="card shadow-sm border-0" style="border-radius: 15px;">
         <div class="card-header bg-primary text-white border-0" style="border-radius: 15px 15px 0 0;">
             <h5 class="card-title mb-0">
-                <i class="bi bi-table me-2"></i>Danh sách đảng viên
+                <i class="bi bi-table me-2"></i>
+                @if (userRole == "Admin")
+                {
+                    <span>Danh sách đảng viên</span>
+                }
+                else if (userRole == "LopTruongLao")
+                {
+                    <span>Danh sách đảng viên học viên Lào</span>
+                }
+                else if (userRole == "LopTruongCam")
+                {
+                    <span>Danh sách đảng viên học viên Campuchia</span>
+                }
+                else
+                {
+                    <span>Danh sách đảng viên</span>
+                }
             </h5>
         </div>
         <div class="card-body p-0">
@@ -91,124 +145,124 @@
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    
+
     <style>
         .table tbody tr {
             transition: all 0.2s ease;
             border-bottom: 1px solid #e9ecef;
         }
-        
+
         .table tbody tr:hover {
             background-color: #f8f9ff !important;
             transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
         }
-        
+
         .table td {
             padding: 15px 12px;
             vertical-align: middle;
             border: none;
         }
-        
+
         .btn-group .btn {
             border-radius: 8px !important;
             transition: all 0.2s ease;
         }
-        
+
         .btn-group .btn:hover {
             transform: scale(1.05);
         }
-        
+
         .form-select:focus {
             border-color: #0d6efd;
             box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
         }
-        
+
         .form-select:disabled {
             background-color: #e9ecef !important;
             opacity: 0.6;
         }
-        
+
         .card {
             transition: all 0.3s ease;
         }
-        
+
         .card:hover {
             transform: translateY(-2px);
         }
-        
+
         /* DataTables custom styling */
         .dataTables_wrapper .dataTables_info {
             padding-top: 1rem;
             padding-left: 1.5rem;
             color: #6c757d;
         }
-        
+
         .dataTables_wrapper .dataTables_paginate {
             padding-top: 1rem;
             padding-right: 1.5rem;
         }
-        
+
         .dataTables_wrapper .dataTables_paginate .paginate_button {
             border-radius: 6px !important;
             margin: 0 2px;
         }
-        
+
         .dataTables_wrapper .dataTables_paginate .paginate_button.current {
             background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%) !important;
             border-color: #0d6efd !important;
         }
-        
+
         .dataTables_wrapper .dataTables_length select {
             border-radius: 8px;
             border: 1px solid #dee2e6;
             padding: 0.375rem 0.75rem;
         }
-        
+
         .dataTables_wrapper .dataTables_filter input {
             border-radius: 8px;
             border: 1px solid #dee2e6;
             padding: 0.375rem 0.75rem;
         }
     </style>
-    
+
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Khởi tạo DataTable
             let table = new DataTable('#dangVienTable', {
                 dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
-                     '<"row"<"col-sm-12"tr>>' +
-                     '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                    '<"row"<"col-sm-12"tr>>' +
+                    '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 ajax: {
                     url: '@Url.Action("GetData")',
                     dataSrc: 'data'
                 },
                 columns: [
                     { data: 'hoTen' },
-                    { 
+                    {
                         data: 'loaiNguoi',
-                        render: function(data) {
+                        render: function (data) {
                             const label = data === 'NhanVien' ? 'Nhân viên' : 'Học viên';
                             const badgeClass = data === 'NhanVien' ? 'bg-primary' : 'bg-success';
                             return `<span class="badge ${badgeClass} px-3 py-2">${label}</span>`;
                         }
                     },
                     { data: 'quocTich' },
-                    { 
+                    {
                         data: 'loaiDangVien',
-                        render: function(data) {
+                        render: function (data) {
                             return `<span class="badge bg-info px-3 py-2">${data}</span>`;
                         }
                     },
-                    { 
+                    {
                         data: 'ngayVaoDangDuBi',
-                        render: function(data) {
+                        render: function (data) {
                             return data ? `<span class="text-muted">${moment(data).format('DD/MM/YYYY')}</span>` : '';
                         }
                     },
-                    { 
+                    {
                         data: 'ngayVaoDangChinhThuc',
-                        render: function(data) {
+                        render: function (data) {
                             return data ? `<span class="text-muted">${moment(data).format('DD/MM/YYYY')}</span>` : '';
                         }
                     },
@@ -217,13 +271,13 @@
                     {
                         data: 'id',
                         orderable: false,
-                        render: function(data) {
+                        render: function (data) {
                             return `
-                                <div class="text-center">
-                                    <a href="@Url.Action("DetailsHocVien")/${data}" class="btn btn-warning btn-sm shadow-sm" title="Cập nhật thông tin Đảng" style="border-radius: 8px;">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                </div>`;
+                                    <div class="text-center">
+                                        <a href="@Url.Action("DetailsHocVien")/${data}" class="btn btn-warning btn-sm shadow-sm" title="Cập nhật thông tin Đảng" style="border-radius: 8px;">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>`;
                         }
                     }
                 ],
@@ -239,9 +293,9 @@
                 pageLength: 10,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Tất cả"]],
                 order: [[1, 'asc']],
-                drawCallback: function() {
+                drawCallback: function () {
                     // Add animation to newly loaded rows
-                    $('#dangVienTable tbody tr').each(function(index) {
+                    $('#dangVienTable tbody tr').each(function (index) {
                         $(this).css('animation-delay', (index * 0.05) + 's');
                         $(this).addClass('fade-in');
                     });
@@ -255,9 +309,9 @@
                 const loaiDangVien = $('#loaiDangVienFilter').val();
 
                 // Tạo URL với các tham số lọc
-                const url = '@Url.Action("GetData")' + 
-                    '?loaiNguoi=' + encodeURIComponent(loaiNguoi || '') + 
-                    '&quocTich=' + encodeURIComponent(quocTich || '') + 
+                const url = '@Url.Action("GetData")' +
+                    '?loaiNguoi=' + encodeURIComponent(loaiNguoi || '') +
+                    '&quocTich=' + encodeURIComponent(quocTich || '') +
                     '&loaiDangVien=' + encodeURIComponent(loaiDangVien || '');
 
                 // Cập nhật URL và reload dữ liệu
@@ -265,39 +319,46 @@
             }
 
             // Xử lý sự kiện thay đổi loại người
-            $('#loaiNguoiFilter').on('change', function() {
+            $('#loaiNguoiFilter').on('change', function () {
                 const loaiNguoi = $(this).val();
                 const quocTichFilter = $('#quocTichFilter');
-                
-                if (loaiNguoi === 'HocVien') {
+
+                // Chỉ Admin mới có thể lọc theo quốc tịch
+                if (loaiNguoi === 'HocVien' && '@userRole' === 'Admin') {
                     quocTichFilter.prop('disabled', false);
                 } else {
                     quocTichFilter.prop('disabled', true);
                     quocTichFilter.val('');
                 }
-                
+
                 reloadTableWithFilters();
             });
 
             // Xử lý sự kiện thay đổi các bộ lọc khác
-            $('#quocTichFilter, #loaiDangVienFilter').on('change', function() {
+            $('#quocTichFilter, #loaiDangVienFilter').on('change', function () {
                 reloadTableWithFilters();
             });
+
+            // Khởi tạo trạng thái ban đầu của bộ lọc quốc tịch
+            if ('@userRole' !== 'Admin') {
+                $('#quocTichFilter').prop('disabled', true);
+            }
         });
     </script>
-    
+
     <style>
         keyframes fade-in {
             from {
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .fade-in {
             animation: fade-in 0.3s ease forwards;
         }

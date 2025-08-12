@@ -121,7 +121,8 @@ namespace QLHV.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditProfile(string HoTen, string? NgaySinh, string? CapBac, string? ChucVu, 
-            string? ChuyenNganh, string? TruongHoc, string? KhoaHoc, string? NgayNhapHoc, string? NgayTotNghiep)
+            string? ChuyenNganh, string? TruongHoc, string? KhoaHoc, string? NgayNhapHoc, string? NgayTotNghiep,
+            string? Username, string? CurrentPassword, string? NewPassword, string? ConfirmPassword)
         {
             // Lấy thông tin user đang đăng nhập
             var userId = HttpContext.Session.GetString("UserId");
@@ -143,37 +144,92 @@ namespace QLHV.Controllers
             {
                 try
                 {
-                    // Cập nhật thông tin cá nhân
+                    var hasAnyChange = false;
+
+                    // Cập nhật thông tin cá nhân (bảng Nguoi)
                     if (user.MaNguoiNavigation != null)
                     {
                         user.MaNguoiNavigation.HoTen = HoTen;
-                        
+
                         if (!string.IsNullOrEmpty(NgaySinh) && DateOnly.TryParse(NgaySinh, out var ngaySinh))
                         {
                             user.MaNguoiNavigation.NgaySinh = ngaySinh;
                         }
-                        
+
                         user.MaNguoiNavigation.CapBac = CapBac;
                         user.MaNguoiNavigation.ChucVu = ChucVu;
                         user.MaNguoiNavigation.ChuyenNganh = ChuyenNganh;
                         user.MaNguoiNavigation.TruongHoc = TruongHoc;
                         user.MaNguoiNavigation.KhoaHoc = KhoaHoc;
-                        
+
                         if (!string.IsNullOrEmpty(NgayNhapHoc) && DateOnly.TryParse(NgayNhapHoc, out var ngayNhapHoc))
                         {
                             user.MaNguoiNavigation.NgayNhapHoc = ngayNhapHoc;
                         }
-                        
+
                         if (!string.IsNullOrEmpty(NgayTotNghiep) && DateOnly.TryParse(NgayTotNghiep, out var ngayTotNghiep))
                         {
                             user.MaNguoiNavigation.NgayTotNghiep = ngayTotNghiep;
                         }
 
-                        _context.Update(user.MaNguoiNavigation);
-                        await _context.SaveChangesAsync();
-                        
-                        return RedirectToAction("Profile");
+                        // Cập nhật trường Đoàn viên
+                        user.MaNguoiNavigation.DoanVien = Request.Form.ContainsKey("DoanVien");
+
+                        hasAnyChange = true;
                     }
+
+                    // Đổi tên đăng nhập nếu có
+                    if (!string.IsNullOrWhiteSpace(Username) && Username != user.Username)
+                    {
+                        var existed = await _context.Users.AnyAsync(u => u.Username == Username && u.MaUser != user.MaUser);
+                        if (existed)
+                        {
+                            ModelState.AddModelError("Username", "Tên đăng nhập đã tồn tại");
+                            await PopulateDropDownListsAsync();
+                            return View(user);
+                        }
+
+                        user.Username = Username;
+                        HttpContext.Session.SetString("Username", user.Username);
+                        hasAnyChange = true;
+                    }
+
+                    // Đổi mật khẩu nếu có nhập
+                    if (!string.IsNullOrWhiteSpace(CurrentPassword) || !string.IsNullOrWhiteSpace(NewPassword) || !string.IsNullOrWhiteSpace(ConfirmPassword))
+                    {
+                        if (string.IsNullOrWhiteSpace(CurrentPassword) || string.IsNullOrWhiteSpace(NewPassword) || string.IsNullOrWhiteSpace(ConfirmPassword))
+                        {
+                            ModelState.AddModelError("Password", "Vui lòng nhập đủ mật khẩu hiện tại, mật khẩu mới và xác nhận mật khẩu mới");
+                            await PopulateDropDownListsAsync();
+                            return View(user);
+                        }
+
+                        if (user.PasswordHash != HashPassword(CurrentPassword))
+                        {
+                            ModelState.AddModelError("CurrentPassword", "Mật khẩu hiện tại không đúng");
+                            await PopulateDropDownListsAsync();
+                            return View(user);
+                        }
+
+                        if (NewPassword != ConfirmPassword)
+                        {
+                            ModelState.AddModelError("ConfirmPassword", "Mật khẩu xác nhận không khớp");
+                            await PopulateDropDownListsAsync();
+                            return View(user);
+                        }
+
+                        user.PasswordHash = HashPassword(NewPassword);
+                        hasAnyChange = true;
+                    }
+
+                    if (hasAnyChange)
+                    {
+                        _context.Update(user);
+                        await _context.SaveChangesAsync();
+                        TempData["Success"] = "Cập nhật thành công";
+                    }
+
+                    return RedirectToAction("Profile");
                 }
                 catch (Exception ex)
                 {
@@ -184,6 +240,13 @@ namespace QLHV.Controllers
             // Populate dropdown lists for error case
             await PopulateDropDownListsAsync();
             return View(user);
+        }
+
+        private string HashPassword(string password)
+        {
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            return System.Convert.ToBase64String(hashedBytes);
         }
 
         private async Task PopulateDropDownListsAsync()

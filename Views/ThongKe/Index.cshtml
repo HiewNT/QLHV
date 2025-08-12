@@ -1,37 +1,501 @@
 @{
-    ViewData["Title"] = "Thống kê chung";
+    ViewData["Title"] = "Thống kê tổng quan";
 }
-<h2>@ViewData["Title"]</h2>
-<div class="row g-3">
-    <div class="col-md-3">
-        <div class="card"><div class="card-body">
-            <div class="fw-bold">Tổng học viên</div>
-            <div class="display-6">@ViewBag.TongHocVien</div>
-        </div></div>
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 text-primary fw-bold">
+                <i class="bi bi-graph-up me-2"></i>@ViewData["Title"]
+            </h2>
+            <p class="text-muted mb-0">Tổng quan thống kê hệ thống quản lý học viên</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="refreshCharts()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Làm mới
+            </button>
+        </div>
     </div>
-    <div class="col-md-3">
-        <div class="card"><div class="card-body">
-            <div class="fw-bold">Tổng nhân viên</div>
-            <div class="display-6">@ViewBag.TongNhanVien</div>
-        </div></div>
+
+    <!-- Thống kê tổng quan -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Tổng học viên</h6>
+                            <h2 class="mb-0 fw-bold">@ViewBag.TongHocVien</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Tổng nhân viên</h6>
+                            <h2 class="mb-0 fw-bold">@ViewBag.TongNhanVien</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-person-badge-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Đảng viên chính thức</h6>
+                            <h2 class="mb-0 fw-bold">@ViewBag.DangVienChinhThuc</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Đảng viên dự bị</h6>
+                            <h2 class="mb-0 fw-bold">@ViewBag.DangVienDuBi</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-3">
-        <div class="card"><div class="card-body">
-            <div class="fw-bold">Loại Đảng viên</div>
-            <div class="display-6">@ViewBag.TongLoaiDangVien</div>
-        </div></div>
+
+    <!-- Thống kê chi tiết -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-danger text-white shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Học viên Lào</h6>
+                            <h2 class="mb-0 fw-bold">@ViewBag.TongLao</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-flag-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-secondary text-white shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Học viên Campuchia</h6>
+                            <h2 class="mb-0 fw-bold">@ViewBag.TongCam</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-flag"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-dark text-white shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Đoàn viên</h6>
+                            <h2 class="mb-0 fw-bold">@ViewBag.DoanVien</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-award-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-light text-dark shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1">Tổng hoạt động</h6>
+                            <h2 class="mb-0 fw-bold">@(ViewBag.TongKhenThuong + ViewBag.TongKyLuat + ViewBag.TongPhongTrao + ViewBag.LuotKhenThuong + ViewBag.LuotKyLuat + ViewBag.LuotPhongTrao)</h2>
+                        </div>
+                        <div class="fs-1">
+                            <i class="bi bi-activity"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-md-3">
-        <div class="card"><div class="card-body">
-            <div class="fw-bold">Học viên Lào</div>
-            <div class="display-6">@ViewBag.TongLao</div>
-        </div></div>
-    </div>
-    <div class="col-md-3">
-        <div class="card"><div class="card-body">
-            <div class="fw-bold">Học viên Cam</div>
-            <div class="display-6">@ViewBag.TongCam</div>
-        </div></div>
+
+         <!-- Biểu đồ -->
+     <div class="row g-4">
+         <!-- Biểu đồ Đảng viên -->
+         <div class="col-lg-4">
+             <div class="card shadow-sm border-0">
+                 <div class="card-header bg-primary text-white border-0">
+                     <h5 class="card-title mb-0">
+                         <i class="bi bi-pie-chart me-2"></i>Thống kê Đảng viên
+                     </h5>
+                 </div>
+                 <div class="card-body">
+                     <canvas id="dangVienChart" width="400" height="300"></canvas>
+                 </div>
+             </div>
+         </div>
+
+         <!-- Biểu đồ Học viên -->
+         <div class="col-lg-4">
+             <div class="card shadow-sm border-0">
+                 <div class="card-header bg-success text-white border-0">
+                     <h5 class="card-title mb-0">
+                         <i class="bi bi-bar-chart me-2"></i>Thống kê Học viên & Nhân viên
+                     </h5>
+                 </div>
+                 <div class="card-body">
+                     <canvas id="hocVienChart" width="400" height="300"></canvas>
+                 </div>
+             </div>
+         </div>
+
+         <!-- Biểu đồ Đoàn viên -->
+         <div class="col-lg-4">
+             <div class="card shadow-sm border-0">
+                 <div class="card-header bg-warning text-white border-0">
+                     <h5 class="card-title mb-0">
+                         <i class="bi bi-donut-chart me-2"></i>Thống kê Đoàn viên
+                     </h5>
+                 </div>
+                 <div class="card-body">
+                     <canvas id="doanVienChart" width="400" height="300"></canvas>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+    <!-- Bảng thống kê chi tiết -->
+    <div class="row g-4 mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white border-0">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-table me-2"></i>Thống kê chi tiết
+                    </h5>
+                </div>
+                <div class="card-body">
+                                         <div class="row">
+                         <div class="col-md-4">
+                             <h6 class="text-primary mb-3">Thống kê Khen thưởng, Kỷ luật, Phong trào</h6>
+                             <div class="table-responsive">
+                                 <table class="table table-hover">
+                                     <thead class="table-light">
+                                         <tr>
+                                             <th>Loại hoạt động</th>
+                                             <th class="text-center">Số đợt</th>
+                                             <th class="text-center">Số lượt người</th>
+                                         </tr>
+                                     </thead>
+                                     <tbody>
+                                         <tr>
+                                             <td><i class="bi bi-trophy-fill text-success me-2"></i>Khen thưởng</td>
+                                             <td class="text-center fw-bold">@ViewBag.TongKhenThuong</td>
+                                             <td class="text-center fw-bold text-success">@ViewBag.LuotKhenThuong</td>
+                                         </tr>
+                                         <tr>
+                                             <td><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Kỷ luật</td>
+                                             <td class="text-center fw-bold">@ViewBag.TongKyLuat</td>
+                                             <td class="text-center fw-bold text-danger">@ViewBag.LuotKyLuat</td>
+                                         </tr>
+                                         <tr>
+                                             <td><i class="bi bi-flag-fill text-primary me-2"></i>Phong trào thi đua</td>
+                                             <td class="text-center fw-bold">@ViewBag.TongPhongTrao</td>
+                                             <td class="text-center fw-bold text-primary">@ViewBag.LuotPhongTrao</td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                             </div>
+                         </div>
+                         <div class="col-md-4">
+                             <h6 class="text-primary mb-3">Thống kê Kết quả học tập</h6>
+                             <div class="mb-3">
+                                 <label for="namHocSelect" class="form-label">Chọn năm học:</label>
+                                 <select id="namHocSelect" class="form-select" onchange="updateKetQuaHocTapTable()">
+                                     <option value="">Tất cả năm học</option>
+                                     @foreach (var namHoc in ViewBag.NamHocList)
+                                     {
+                                         <option value="@namHoc">@namHoc</option>
+                                     }
+                                 </select>
+                             </div>
+                             <div id="ketQuaHocTapInfo" class="mb-3">
+                                 <div class="row text-center">
+                                     <div class="col-6">
+                                         <small class="text-muted">Tổng số:</small>
+                                         <div class="fw-bold" id="tongSoKetQua">0</div>
+                                     </div>
+                                     <div class="col-6">
+                                         <small class="text-muted">Điểm TB:</small>
+                                         <div class="fw-bold" id="diemTrungBinh">0.00</div>
+                                     </div>
+                                 </div>
+                             </div>
+                             <div class="table-responsive">
+                                 <table class="table table-hover" id="ketQuaHocTapTable">
+                                     <thead class="table-light">
+                                         <tr>
+                                             <th>Mức điểm</th>
+                                             <th class="text-center">Số học viên</th>
+                                         </tr>
+                                     </thead>
+                                     <tbody>
+                                         <tr>
+                                             <td><i class="bi bi-star-fill text-danger me-2"></i>Xuất sắc (9.0+)</td>
+                                             <td class="text-center fw-bold" id="xuatSac">0</td>
+                                         </tr>
+                                         <tr>
+                                             <td><i class="bi bi-star-fill text-warning me-2"></i>Giỏi (8.0-8.9)</td>
+                                             <td class="text-center fw-bold" id="gioi">0</td>
+                                         </tr>
+                                         <tr>
+                                             <td><i class="bi bi-star-fill text-info me-2"></i>Khá (7.0-7.9)</td>
+                                             <td class="text-center fw-bold" id="kha">0</td>
+                                         </tr>
+                                         <tr>
+                                             <td><i class="bi bi-star-fill text-success me-2"></i>Trung bình (5.0-6.9)</td>
+                                             <td class="text-center fw-bold" id="trungBinh">0</td>
+                                         </tr>
+                                         <tr>
+                                             <td><i class="bi bi-star-fill text-secondary me-2"></i>Yếu (<5.0)</td>
+                                             <td class="text-center fw-bold" id="yeu">0</td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                             </div>
+                         </div>
+                         <div class="col-md-4">
+                             <h6 class="text-primary mb-3">Tổng quan hệ thống</h6>
+                             <div class="table-responsive">
+                                 <table class="table table-hover">
+                                     <thead class="table-light">
+                                         <tr>
+                                             <th>Chỉ số</th>
+                                             <th class="text-center">Giá trị</th>
+                                         </tr>
+                                     </thead>
+                                     <tbody>
+                                         <tr>
+                                             <td><i class="bi bi-people-fill text-primary me-2"></i>Tổng người</td>
+                                             <td class="text-center fw-bold">@(ViewBag.TongHocVien + ViewBag.TongNhanVien)</td>
+                                         </tr>
+                                         <tr>
+                                             <td><i class="bi bi-star-fill text-warning me-2"></i>Tổng Đảng viên</td>
+                                             <td class="text-center fw-bold">@(ViewBag.DangVienChinhThuc + ViewBag.DangVienDuBi)</td>
+                                         </tr>
+                                         <tr>
+                                             <td><i class="bi bi-award-fill text-success me-2"></i>Tổng Đoàn viên</td>
+                                             <td class="text-center fw-bold">@ViewBag.DoanVien</td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                             </div>
+                         </div>
+                     </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let dangVienChart, hocVienChart, doanVienChart;
+
+        // Khởi tạo biểu đồ
+        function initCharts() {
+            // Biểu đồ Đảng viên
+            const dangVienCtx = document.getElementById('dangVienChart').getContext('2d');
+            dangVienChart = new Chart(dangVienCtx, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Biểu đồ Học viên
+            const hocVienCtx = document.getElementById('hocVienChart').getContext('2d');
+            hocVienChart = new Chart(hocVienCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Số lượng',
+                        data: [],
+                        backgroundColor: [],
+                        borderWidth: 1,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Biểu đồ Đoàn viên
+            const doanVienCtx = document.getElementById('doanVienChart').getContext('2d');
+            doanVienChart = new Chart(doanVienCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+
+        }
+
+        // Cập nhật dữ liệu biểu đồ
+        async function updateCharts() {
+            try {
+                // Cập nhật biểu đồ Đảng viên
+                const dangVienData = await fetch('@Url.Action("GetDangVienData")').then(r => r.json());
+                dangVienChart.data.labels = dangVienData.labels;
+                dangVienChart.data.datasets[0].data = dangVienData.data;
+                dangVienChart.data.datasets[0].backgroundColor = dangVienData.backgroundColor;
+                dangVienChart.update();
+
+                // Cập nhật biểu đồ Học viên
+                const hocVienData = await fetch('@Url.Action("GetHocVienData")').then(r => r.json());
+                hocVienChart.data.labels = hocVienData.labels;
+                hocVienChart.data.datasets[0].data = hocVienData.data;
+                hocVienChart.data.datasets[0].backgroundColor = hocVienData.backgroundColor;
+                hocVienChart.update();
+
+                // Cập nhật biểu đồ Đoàn viên
+                const doanVienData = await fetch('@Url.Action("GetDoanVienData")').then(r => r.json());
+                doanVienChart.data.labels = doanVienData.labels;
+                doanVienChart.data.datasets[0].data = doanVienData.data;
+                doanVienChart.data.datasets[0].backgroundColor = doanVienData.backgroundColor;
+                doanVienChart.update();
+
+                // Cập nhật bảng Kết quả học tập
+                await updateKetQuaHocTapTable();
+
+            } catch (error) {
+                console.error('Lỗi khi cập nhật biểu đồ:', error);
+            }
+        }
+
+        // Cập nhật bảng Kết quả học tập
+        async function updateKetQuaHocTapTable() {
+            try {
+                const namHoc = document.getElementById('namHocSelect').value;
+                const url = '@Url.Action("GetKetQuaHocTapData")' + (namHoc ? `?namHoc=${namHoc}` : '');
+                
+                const ketQuaData = await fetch(url).then(r => r.json());
+                
+                // Cập nhật thông tin tổng quan
+                document.getElementById('tongSoKetQua').textContent = ketQuaData.tongSo;
+                document.getElementById('diemTrungBinh').textContent = ketQuaData.diemTrungBinh.toFixed(2);
+
+                // Cập nhật bảng
+                document.getElementById('xuatSac').textContent = ketQuaData.data[0];
+                document.getElementById('gioi').textContent = ketQuaData.data[1];
+                document.getElementById('kha').textContent = ketQuaData.data[2];
+                document.getElementById('trungBinh').textContent = ketQuaData.data[3];
+                document.getElementById('yeu').textContent = ketQuaData.data[4];
+
+            } catch (error) {
+                console.error('Lỗi khi cập nhật bảng kết quả học tập:', error);
+            }
+        }
+
+        // Làm mới biểu đồ
+        function refreshCharts() {
+            updateCharts();
+            // Hiển thị thông báo
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed top-0 end-0 p-3';
+            toast.style.zIndex = '1050';
+            toast.innerHTML = `
+                <div class="toast show" role="alert">
+                    <div class="toast-header">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <strong class="me-auto">Thành công</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        Đã cập nhật dữ liệu thống kê mới nhất
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Khởi tạo khi trang load
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            updateCharts();
+        });
+    </script>
+}
 

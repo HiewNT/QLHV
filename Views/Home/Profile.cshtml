@@ -193,6 +193,27 @@
                         <span class="info-label">Cấp bậc:</span>
                         <span class="info-value">@(Model.MaNguoiNavigation?.CapBac ?? "N/A")</span>
                     </div>
+                    <div class="info-item d-flex">
+                        <span class="info-label">Đoàn viên:</span>
+                        <span class="info-value">
+                            @if (Model.MaNguoiNavigation?.DoanVien == true)
+                            {
+                                <span class="badge bg-success badge-custom">
+                                    <i class="bi bi-check-circle me-1"></i>Có
+                                </span>
+                            }
+                            else if (Model.MaNguoiNavigation?.DoanVien == false)
+                            {
+                                <span class="badge bg-secondary badge-custom">
+                                    <i class="bi bi-x-circle me-1"></i>Không
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-dark badge-custom">N/A</span>
+                            }
+                        </span>
+                    </div>
                     @if (Model.MaNguoiNavigation?.LoaiNguoi == "HocVien")
                     {
                         <div class="info-item d-flex">

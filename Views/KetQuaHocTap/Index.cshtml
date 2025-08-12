@@ -1,6 +1,8 @@
 @model IEnumerable<QLHV.Models.KetQuaHocTap>
 @{
     ViewData["Title"] = "Kết quả học tập";
+    var userRole = ViewBag.UserRole as string ?? string.Empty;
+    bool canManage = userRole == "Admin" || userRole == "LopTruongLao" || userRole == "LopTruongCam";
 }
 
 <div class="container-fluid py-4">
@@ -12,11 +14,23 @@
                     <h2 class="mb-1 text-primary">
                         <i class="bi bi-mortarboard me-3"></i>@ViewData["Title"]
                     </h2>
-                    <p class="text-muted mb-0">Quản lý kết quả học tập của học viên theo năm học</p>
+                    <p class="text-muted mb-0">
+                        @if (userRole == "LopTruongLao") 
+                        {<text>Quản lý kết quả học tập của học viên Lào</text>} 
+                        else if (userRole == "LopTruongCam") 
+                        {<text>Quản lý kết quả học tập của học viên Campuchia</text>} 
+                        else if (userRole == "Admin")
+                        {<text>Quản lý kết quả học tập của tất cả học viên</text>}
+                        else 
+                        {<text>Xem kết quả học tập</text>}
+                    </p>
                 </div>
-                <a asp-action="Create" class="btn btn-primary btn-lg px-4">
-                    <i class="bi bi-plus-circle me-2"></i>Thêm kết quả mới
-                </a>
+                @if (canManage)
+                {
+                    <a asp-action="Create" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-plus-circle me-2"></i>Thêm kết quả mới
+                    </a>
+                }
             </div>
         </div>
     </div>
@@ -53,19 +67,6 @@
             <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
                 <div class="card-body text-center">
                     <div class="d-flex align-items-center justify-content-center mb-3">
-                        <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
-                            <i class="bi bi-star text-warning fs-1"></i>
-                        </div>
-                    </div>
-                    <h4 class="text-warning mb-1" id="diemTrungBinh">-</h4>
-                    <p class="text-muted mb-0">Điểm TB chung</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                <div class="card-body text-center">
-                    <div class="d-flex align-items-center justify-content-center mb-3">
                         <div class="bg-info bg-opacity-10 p-3 rounded-circle">
                             <i class="bi bi-calendar-year text-info fs-1"></i>
                         </div>
@@ -84,7 +85,30 @@
                 <h5 class="mb-0 text-primary">
                     <i class="bi bi-table me-2"></i>Danh sách kết quả học tập
                 </h5>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="d-flex gap-2">
+                        @if (userRole != "LopTruongLao" && userRole != "LopTruongCam")
+                        {
+                            <div class="btn-group" role="group" aria-label="Quốc tịch">
+                                <input type="radio" class="btn-check" name="qtFilter" id="qtAll" autocomplete="off" checked>
+                                <label class="btn btn-outline-secondary btn-sm" for="qtAll">Tất cả</label>
+                                <input type="radio" class="btn-check" name="qtFilter" id="qtLao" autocomplete="off">
+                                <label class="btn btn-outline-secondary btn-sm" for="qtLao">Lào</label>
+                                <input type="radio" class="btn-check" name="qtFilter" id="qtCam" autocomplete="off">
+                                <label class="btn btn-outline-secondary btn-sm" for="qtCam">Campuchia</label>
+                            </div>
+                        }
+                        <select id="namHocFilter" class="form-select form-select-sm" style="width:auto; min-width: 160px;">
+                            <option value="">Tất cả năm học</option>
+                            @if (ViewBag.NamHocList != null)
+                            {
+                                foreach (var n in (IEnumerable<string>)ViewBag.NamHocList)
+                                {
+                                    <option value="@n">@n</option>
+                                }
+                            }
+                        </select>
+                    </div>
                     <button class="btn btn-outline-primary btn-sm" onclick="table.ajax.reload()">
                         <i class="bi bi-arrow-clockwise me-1"></i>Làm mới
                     </button>
@@ -117,6 +141,7 @@
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script>
         let table;
+        const canManage = @canManage.ToString().ToLower();
         
         $(document).ready(function() {
             table = $('#ketQuaTable').DataTable({
@@ -124,6 +149,14 @@
                     url: '@Url.Action("GetData")',
                     type: 'GET',
                     datatype: 'json',
+                    data: function(d) {
+                        // Chỉ gửi quốc tịch nếu bộ lọc tồn tại và được chọn
+                        const qt = getSelectedQt();
+                        if (qt) d.quocTich = qt;
+                        
+                        const nh = $('#namHocFilter').val();
+                        if (nh) d.namHoc = nh;
+                    },
                     dataSrc: function(json) {
                         updateStatistics(json.data);
                         return json.data;
@@ -153,7 +186,7 @@
                         data: 'diemTrungBinh',
                         className: 'text-center',
                         render: function(data) {
-                            if (!data) return '<span class="text-muted">-</span>';
+                            if (!data && data !== 0) return '<span class="text-muted">-</span>';
                             const diem = parseFloat(data);
                             let badgeClass = 'bg-secondary';
                             if (diem >= 8.0) badgeClass = 'bg-success';
@@ -176,18 +209,27 @@
                         orderable: false,
                         className: 'text-center',
                         render: function(data) {
-                            return `
-                                <div class="btn-group btn-group-sm">
-                                    <a href="@Url.Action("Details")/${data}" class="btn btn-outline-primary" title="Xem chi tiết">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="@Url.Action("Edit")/${data}" class="btn btn-outline-warning" title="Sửa">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a href="@Url.Action("Delete")/${data}" class="btn btn-outline-danger" title="Xóa">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </div>`;
+                            if (canManage) {
+                                return `
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="@Url.Action("Details")/${data}" class="btn btn-outline-primary" title="Xem chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="@Url.Action("Edit")/${data}" class="btn btn-outline-warning" title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="@Url.Action("Delete")/${data}" class="btn btn-outline-danger" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>`;
+                            } else {
+                                return `
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="@Url.Action("Details")/${data}" class="btn btn-outline-primary" title="Xem chi tiết">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>`;
+                            }
                         }
                     }
                 ],
@@ -235,6 +277,29 @@
             $('#diemTrungBinh').text(diemTrungBinh);
             $('#namHocHienTai').text(namHocHienTai);
         }
+
+        function getSelectedQt() {
+            // Nếu là LopTruongLao hoặc LopTruongCam thì không cần lọc (đã được lọc theo role)
+            const userRole = '@userRole';
+            if (userRole === 'LopTruongLao' || userRole === 'LopTruongCam') {
+                return '';
+            }
+            
+            // Nếu có bộ lọc quốc tịch thì trả về giá trị được chọn
+            if ($('#qtLao').length && $('#qtLao').is(':checked')) return 'Lào';
+            if ($('#qtCam').length && $('#qtCam').is(':checked')) return 'Campuchia';
+            return '';
+        }
+
+        // Bind event cho bộ lọc quốc tịch nếu tồn tại
+        if ($('input[name="qtFilter"]').length) {
+            $('input[name="qtFilter"]').on('change', function () {
+                table.ajax.reload();
+            });
+        }
+        $('#namHocFilter').on('change', function () {
+            table.ajax.reload();
+        });
     </script>
 }
 
@@ -298,4 +363,7 @@
         justify-content: center;
     }
 </style>
+
+
+
 

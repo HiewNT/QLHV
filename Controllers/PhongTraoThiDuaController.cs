@@ -19,21 +19,44 @@ public class PhongTraoThiDuaController : Controller
     // GET: PhongTraoThiDua/GetData
     public async Task<IActionResult> GetData()
     {
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+
         var phongTraos = await _context.PhongTraoThiDuas
             .Include(p => p.NguoiDatDuocPttds)
-            .Select(p => new
-            {
-                p.MaPttd,
-                p.TenPhongTrao,
-                p.ThoiGianBatDau,
-                p.ThoiGianKetThuc,
-                p.PhanTramKhenThuong,
-                p.MoTa,
-                SoNguoiDatDuoc = p.NguoiDatDuocPttds.Count
-            })
+            .ThenInclude(ndd => ndd.MaNguoiNavigation)
             .ToListAsync();
 
-        return Json(new { data = phongTraos });
+        if (userRole == "LopTruongLao")
+        {
+            foreach (var pt in phongTraos)
+            {
+                pt.NguoiDatDuocPttds = pt.NguoiDatDuocPttds
+                    .Where(ndd => ndd.MaNguoiNavigation?.LoaiNguoi == "HocVien" && ndd.MaNguoiNavigation?.QuocTich.Contains("Lào") == true)
+                    .ToList();
+            }
+        }
+        else if (userRole == "LopTruongCam")
+        {
+            foreach (var pt in phongTraos)
+            {
+                pt.NguoiDatDuocPttds = pt.NguoiDatDuocPttds
+                    .Where(ndd => ndd.MaNguoiNavigation?.LoaiNguoi == "HocVien" && ndd.MaNguoiNavigation?.QuocTich.Contains("Campuchia") == true)
+                    .ToList();
+            }
+        }
+
+        var result = phongTraos.Select(p => new
+        {
+            p.MaPttd,
+            p.TenPhongTrao,
+            p.ThoiGianBatDau,
+            p.ThoiGianKetThuc,
+            p.PhanTramKhenThuong,
+            p.MoTa,
+            SoNguoiDatDuoc = p.NguoiDatDuocPttds.Count
+        }).ToList();
+
+        return Json(new { data = result });
     }
 
     // GET: PhongTraoThiDua/Details/5
@@ -48,8 +71,10 @@ public class PhongTraoThiDuaController : Controller
 
         if (phongTrao == null) return NotFound();
 
-        // Thêm danh sách người để hiển thị trong dropdown
-        ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+        // Lấy danh sách người theo quyền
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+        var nguoiList = await GetNguoiListByRole(userRole);
+        ViewBag.NguoiList = nguoiList;
 
         return View(phongTrao);
     }
@@ -118,7 +143,11 @@ public class PhongTraoThiDuaController : Controller
         ViewBag.ThoiGianKetThuc = phongTrao.ThoiGianKetThuc;
         ViewBag.PhanTramKhenThuong = phongTrao.PhanTramKhenThuong;
         ViewBag.MoTa = phongTrao.MoTa;
-        ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+        
+        // Lấy danh sách người theo quyền
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+        var nguoiList = await GetNguoiListByRole(userRole);
+        ViewBag.NguoiList = nguoiList;
         
         return View();
     }
@@ -158,7 +187,11 @@ public class PhongTraoThiDuaController : Controller
         ViewBag.ThoiGianKetThuc = phongTrao.ThoiGianKetThuc;
         ViewBag.PhanTramKhenThuong = phongTrao.PhanTramKhenThuong;
         ViewBag.MoTa = phongTrao.MoTa;
-        ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+        
+        // Lấy danh sách người theo quyền
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+        var nguoiList = await GetNguoiListByRole(userRole);
+        ViewBag.NguoiList = nguoiList;
 
         return View(nguoiDatDuoc);
     }
@@ -174,7 +207,12 @@ public class PhongTraoThiDuaController : Controller
         if (string.IsNullOrEmpty(maNguoi))
         {
             ViewBag.MaPttd = maPttd;
-            ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+            
+            // Lấy danh sách người theo quyền
+            var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+            var nguoiList = await GetNguoiListByRole(userRole);
+            ViewBag.NguoiList = nguoiList;
+            
             ModelState.AddModelError("", "Vui lòng chọn người đạt được phong trào");
             return View(nguoiDatDuoc);
         }
@@ -265,5 +303,34 @@ public class PhongTraoThiDuaController : Controller
     private bool PhongTraoExists(int id)
     {
         return _context.PhongTraoThiDuas.Any(e => e.MaPttd == id);
+    }
+
+    // Helper method: Lấy danh sách người theo role
+    private async Task<List<Nguoi>> GetNguoiListByRole(string userRole)
+    {
+        if (userRole == "Admin")
+        {
+            // Admin: Tất cả người (bao gồm cả Nhân viên HQT và Học viên)
+            return await _context.Nguois.ToListAsync();
+        }
+        else if (userRole == "LopTruongLao")
+        {
+            // LopTruongLao: Chỉ học viên Lào
+            return await _context.Nguois
+                .Where(n => n.LoaiNguoi == "HocVien" && n.QuocTich.Contains("Lào"))
+                .ToListAsync();
+        }
+        else if (userRole == "LopTruongCam")
+        {
+            // LopTruongCam: Chỉ học viên Campuchia
+            return await _context.Nguois
+                .Where(n => n.LoaiNguoi == "HocVien" && n.QuocTich.Contains("Campuchia"))
+                .ToListAsync();
+        }
+        else
+        {
+            // Role khác: Không có quyền
+            return new List<Nguoi>();
+        }
     }
 }

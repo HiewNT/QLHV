@@ -45,6 +45,7 @@ public class HocVienLaoController : Controller
                 LoaiDangVien = h.MaLoaiDangVienNavigation != null ? h.MaLoaiDangVienNavigation.TenLoai : "",
                 h.NgayVaoDangChinhThuc,
                 h.NgayVaoDangDuBi,
+                h.DoanVien,
                 KetQuaHocTap = h.KetQuaHocTaps.Count,
                 KhenThuong = h.KhenThuongNguois.Count,
                 KyLuat = h.KyLuatNguois.Count
@@ -96,6 +97,9 @@ public class HocVienLaoController : Controller
         // Set required fields
         hocVien.LoaiNguoi = "HocVien";
         hocVien.QuocTich = "Lào";
+        
+        // Xử lý trường DoanVien từ checkbox
+        hocVien.DoanVien = Request.Form.ContainsKey("DoanVien");
 
         // Clear ModelState errors for the fields we just set
         ModelState.Remove("LoaiNguoi");
@@ -135,6 +139,9 @@ public class HocVienLaoController : Controller
         // Set required fields
         hocVien.LoaiNguoi = "HocVien";
         hocVien.QuocTich = "Lào";
+        
+        // Xử lý trường DoanVien từ checkbox
+        hocVien.DoanVien = Request.Form.ContainsKey("DoanVien");
 
         // Clear ModelState errors for the fields we just set
         ModelState.Remove("LoaiNguoi");

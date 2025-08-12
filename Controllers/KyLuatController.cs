@@ -23,18 +23,41 @@ public class KyLuatController : Controller
     // GET: KyLuat/GetData - For DataTables AJAX
     public async Task<IActionResult> GetData()
     {
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+
         var kyLuats = await _context.KyLuats
             .Include(k => k.KyLuatNguois)
-            .Select(k => new
-            {
-                k.MaKyLuat,
-                k.TenKyLuat,
-                k.MucDo,
-                SoNguoiBiKyLuat = k.KyLuatNguois.Count
-            })
+            .ThenInclude(ktn => ktn.MaNguoiNavigation)
             .ToListAsync();
 
-        return Json(new { data = kyLuats });
+        if (userRole == "LopTruongLao")
+        {
+            foreach (var kl in kyLuats)
+            {
+                kl.KyLuatNguois = kl.KyLuatNguois
+                    .Where(ktn => ktn.MaNguoiNavigation?.LoaiNguoi == "HocVien" && ktn.MaNguoiNavigation?.QuocTich.Contains("Lào") == true)
+                    .ToList();
+            }
+        }
+        else if (userRole == "LopTruongCam")
+        {
+            foreach (var kl in kyLuats)
+            {
+                kl.KyLuatNguois = kl.KyLuatNguois
+                    .Where(ktn => ktn.MaNguoiNavigation?.LoaiNguoi == "HocVien" && ktn.MaNguoiNavigation?.QuocTich.Contains("Campuchia") == true)
+                    .ToList();
+            }
+        }
+
+        var result = kyLuats.Select(k => new
+        {
+            k.MaKyLuat,
+            k.TenKyLuat,
+            k.MucDo,
+            SoNguoiBiKyLuat = k.KyLuatNguois.Count
+        }).ToList();
+
+        return Json(new { data = result });
     }
 
     // GET: KyLuat/Details/5
@@ -49,8 +72,10 @@ public class KyLuatController : Controller
 
         if (kyLuat == null) return NotFound();
 
-        // Thêm danh sách người để hiển thị trong dropdown
-        ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+        // Lấy danh sách người theo quyền
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+        var nguoiList = await GetNguoiListByRole(userRole);
+        ViewBag.NguoiList = nguoiList;
 
         return View(kyLuat);
     }
@@ -108,7 +133,11 @@ public class KyLuatController : Controller
         ViewBag.MaKyLuat = maKyLuat;
         ViewBag.TenKyLuat = kyLuat.TenKyLuat;
         ViewBag.MucDo = kyLuat.MucDo;
-        ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+        
+        // Lấy danh sách người theo quyền
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+        var nguoiList = await GetNguoiListByRole(userRole);
+        ViewBag.NguoiList = nguoiList;
         
         return View();
     }
@@ -145,7 +174,11 @@ public class KyLuatController : Controller
         ViewBag.MaKyLuat = maKyLuat;
         ViewBag.TenKyLuat = kyLuat.TenKyLuat;
         ViewBag.MucDo = kyLuat.MucDo;
-        ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+        
+        // Lấy danh sách người theo quyền
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+        var nguoiList = await GetNguoiListByRole(userRole);
+        ViewBag.NguoiList = nguoiList;
 
         return View(kyLuatNguoi);
     }
@@ -161,7 +194,12 @@ public class KyLuatController : Controller
         if (string.IsNullOrEmpty(maNguoi))
         {
             ViewBag.MaKyLuat = maKyLuat;
-            ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+            
+            // Lấy danh sách người theo quyền
+            var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+            var nguoiList = await GetNguoiListByRole(userRole);
+            ViewBag.NguoiList = nguoiList;
+            
             ModelState.AddModelError("", "Vui lòng chọn người bị kỷ luật");
             return View(kyLuatNguoi);
         }
@@ -251,5 +289,34 @@ public class KyLuatController : Controller
     private bool KyLuatExists(int id)
     {
         return _context.KyLuats.Any(e => e.MaKyLuat == id);
+    }
+
+    // Helper method: Lấy danh sách người theo role
+    private async Task<List<Nguoi>> GetNguoiListByRole(string userRole)
+    {
+        if (userRole == "Admin")
+        {
+            // Admin: Tất cả người (bao gồm cả Nhân viên HQT và Học viên)
+            return await _context.Nguois.ToListAsync();
+        }
+        else if (userRole == "LopTruongLao")
+        {
+            // LopTruongLao: Chỉ học viên Lào
+            return await _context.Nguois
+                .Where(n => n.LoaiNguoi == "HocVien" && n.QuocTich.Contains("Lào"))
+                .ToListAsync();
+        }
+        else if (userRole == "LopTruongCam")
+        {
+            // LopTruongCam: Chỉ học viên Campuchia
+            return await _context.Nguois
+                .Where(n => n.LoaiNguoi == "HocVien" && n.QuocTich.Contains("Campuchia"))
+                .ToListAsync();
+        }
+        else
+        {
+            // Role khác: Không có quyền
+            return new List<Nguoi>();
+        }
     }
 } 

@@ -44,6 +44,7 @@ public class NhanVienController : Controller
                 n.NamNhapNgu,
                 n.NgayVaoDangChinhThuc,
                 n.NgayVaoDangDuBi,
+                n.DoanVien,
                 KhenThuong = n.KhenThuongNguois.Count,
                 KyLuat = n.KyLuatNguois.Count
             })
@@ -96,6 +97,9 @@ public class NhanVienController : Controller
         // Set required fields
         nhanVien.LoaiNguoi = "NhanVien";
         nhanVien.QuocTich = "Việt Nam";
+        
+        // Xử lý trường DoanVien từ checkbox
+        nhanVien.DoanVien = Request.Form.ContainsKey("DoanVien");
 
         // Clear ModelState errors for the fields we just set
         ModelState.Remove("LoaiNguoi");
@@ -165,6 +169,9 @@ public class NhanVienController : Controller
         // Set required fields
         nhanVien.LoaiNguoi = "NhanVien";
         nhanVien.QuocTich = "Việt Nam";
+        
+        // Xử lý trường DoanVien từ checkbox
+        nhanVien.DoanVien = Request.Form.ContainsKey("DoanVien");
 
         // Clear ModelState errors for the fields we just set
         ModelState.Remove("LoaiNguoi");

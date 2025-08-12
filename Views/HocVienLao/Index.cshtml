@@ -37,6 +37,7 @@
                             <th class="fw-bold text-primary border-0 py-3">Ngày nhập học</th>
                             <th class="fw-bold text-primary border-0 py-3">Ngày tốt nghiệp</th>
                             <th class="fw-bold text-primary border-0 py-3">Loại Đảng viên</th>
+                            <th class="fw-bold text-primary border-0 py-3">Đoàn viên</th>
                             <th class="fw-bold text-primary border-0 py-3 text-center" style="width:120px">Thao tác</th>
                         </tr>
                     </thead>
@@ -183,6 +184,18 @@
                         "data": "loaiDangVien",
                         "render": function(data) {
                             return data ? `<span class="badge bg-info px-3 py-2">${data}</span>` : '';
+                        }
+                    },
+                    { 
+                        "data": "doanVien",
+                        "render": function(data) {
+                            if (data === true) {
+                                return '<span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i>Có</span>';
+                            } else if (data === false) {
+                                return '<span class="badge bg-secondary px-3 py-2"><i class="bi bi-x-circle me-1"></i>Không</span>';
+                            } else {
+                                return '<span class="badge bg-light text-dark px-3 py-2">N/A</span>';
+                            }
                         }
                     },
                     {

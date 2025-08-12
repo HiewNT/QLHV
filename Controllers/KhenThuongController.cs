@@ -23,18 +23,41 @@ public class KhenThuongController : Controller
     // GET: KhenThuong/GetData - For DataTables AJAX
     public async Task<IActionResult> GetData()
     {
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+
         var khenThuongs = await _context.KhenThuongs
             .Include(k => k.KhenThuongNguois)
-            .Select(k => new
-            {
-                k.MaKhenThuong,
-                k.TenKhenThuong,
-                k.CapKhenThuong,
-                SoNguoiDuocKhen = k.KhenThuongNguois.Count
-            })
+            .ThenInclude(ktn => ktn.MaNguoiNavigation)
             .ToListAsync();
 
-        return Json(new { data = khenThuongs });
+        if (userRole == "LopTruongLao")
+        {
+            foreach (var kt in khenThuongs)
+            {
+                kt.KhenThuongNguois = kt.KhenThuongNguois
+                    .Where(ktn => ktn.MaNguoiNavigation?.LoaiNguoi == "HocVien" && ktn.MaNguoiNavigation?.QuocTich.Contains("Lào") == true)
+                    .ToList();
+            }
+        }
+        else if (userRole == "LopTruongCam")
+        {
+            foreach (var kt in khenThuongs)
+            {
+                kt.KhenThuongNguois = kt.KhenThuongNguois
+                    .Where(ktn => ktn.MaNguoiNavigation?.LoaiNguoi == "HocVien" && ktn.MaNguoiNavigation?.QuocTich.Contains("Campuchia") == true)
+                    .ToList();
+            }
+        }
+
+        var result = khenThuongs.Select(k => new
+        {
+            k.MaKhenThuong,
+            k.TenKhenThuong,
+            k.CapKhenThuong,
+            SoNguoiDuocKhen = k.KhenThuongNguois.Count
+        }).ToList();
+
+        return Json(new { data = result });
     }
 
     // GET: KhenThuong/Details/5
@@ -138,7 +161,15 @@ public class KhenThuongController : Controller
         ViewBag.MaKhenThuong = maKhenThuong;
         ViewBag.TenKhenThuong = khenThuong.TenKhenThuong;
         ViewBag.CapKhenThuong = khenThuong.CapKhenThuong;
-        ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+        
+        // Lấy danh sách người theo quyền
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+        System.Diagnostics.Debug.WriteLine($"CreatePerson: UserRole from session: '{userRole}'");
+        
+        var nguoiList = await GetNguoiListByRole(userRole);
+        System.Diagnostics.Debug.WriteLine($"CreatePerson: NguoiList count: {nguoiList.Count}");
+        
+        ViewBag.NguoiList = nguoiList;
         
         return View();
     }
@@ -175,7 +206,11 @@ public class KhenThuongController : Controller
         ViewBag.MaKhenThuong = maKhenThuong;
         ViewBag.TenKhenThuong = khenThuong.TenKhenThuong;
         ViewBag.CapKhenThuong = khenThuong.CapKhenThuong;
-        ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+        
+        // Lấy danh sách người theo quyền
+        var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+        var nguoiList = await GetNguoiListByRole(userRole);
+        ViewBag.NguoiList = nguoiList;
 
         return View(khenThuongNguoi);
     }
@@ -191,7 +226,12 @@ public class KhenThuongController : Controller
         if (string.IsNullOrEmpty(maNguoi))
         {
             ViewBag.MaKhenThuong = maKhenThuong;
-            ViewBag.NguoiList = await _context.Nguois.ToListAsync();
+            
+            // Lấy danh sách người theo quyền
+            var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
+            var nguoiList = await GetNguoiListByRole(userRole);
+            ViewBag.NguoiList = nguoiList;
+            
             ModelState.AddModelError("", "Vui lòng chọn người được khen thưởng");
             return View(khenThuongNguoi);
         }
@@ -281,5 +321,34 @@ public class KhenThuongController : Controller
     private bool KhenThuongExists(int id)
     {
         return _context.KhenThuongs.Any(e => e.MaKhenThuong == id);
+    }
+
+    // Helper method: Lấy danh sách người theo role
+    private async Task<List<Nguoi>> GetNguoiListByRole(string userRole)
+    {
+        if (userRole == "Admin")
+        {
+            // Admin: Tất cả người (bao gồm cả Nhân viên HQT và Học viên)
+            return await _context.Nguois.ToListAsync();
+        }
+        else if (userRole == "LopTruongLao")
+        {
+            // LopTruongLao: Chỉ học viên Lào
+            return await _context.Nguois
+                .Where(n => n.LoaiNguoi == "HocVien" && n.QuocTich.Contains("Lào"))
+                .ToListAsync();
+        }
+        else if (userRole == "LopTruongCam")
+        {
+            // LopTruongCam: Chỉ học viên Campuchia
+            return await _context.Nguois
+                .Where(n => n.LoaiNguoi == "HocVien" && n.QuocTich.Contains("Campuchia"))
+                .ToListAsync();
+        }
+        else
+        {
+            // Role khác: Không có quyền
+            return new List<Nguoi>();
+        }
     }
 } 

@@ -35,8 +35,6 @@ public partial class QlhvContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
-    public virtual DbSet<ThongKe> ThongKes { get; set; }
-
     public virtual DbSet<TrinhDo> TrinhDos { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -201,15 +199,6 @@ public partial class QlhvContext : DbContext
 
             entity.Property(e => e.MoTa).HasMaxLength(255);
             entity.Property(e => e.TenRole).HasMaxLength(50);
-        });
-
-        modelBuilder.Entity<ThongKe>(entity =>
-        {
-            entity.HasKey(e => e.MaThongKe).HasName("PK__ThongKe__60E521F48D21A10C");
-
-            entity.ToTable("ThongKe");
-
-            entity.Property(e => e.GhiChu).HasMaxLength(255);
         });
 
         modelBuilder.Entity<TrinhDo>(entity =>

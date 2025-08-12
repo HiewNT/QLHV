@@ -41,6 +41,8 @@ public partial class Nguoi
 
     public DateOnly? NgayVaoDangDuBi { get; set; }
 
+    public bool? DoanVien { get; set; }
+
     public virtual ICollection<KetQuaHocTap> KetQuaHocTaps { get; set; } = new List<KetQuaHocTap>();
 
     public virtual ICollection<KhenThuongNguoi> KhenThuongNguois { get; set; } = new List<KhenThuongNguoi>();

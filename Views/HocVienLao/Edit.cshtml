@@ -123,6 +123,17 @@
                                     <span asp-validation-for="NgayVaoDangChinhThuc" class="text-danger"></span>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="doanVienSwitch" name="DoanVien" value="true" @(Model.DoanVien == true ? "checked" : "") />
+                                        <label class="form-check-label" for="doanVienSwitch">
+                                            <i class="bi bi-flag me-2"></i>Đoàn viên
+                                        </label>
+                                    </div>
+                                    <span asp-validation-for="DoanVien" class="text-danger"></span>
+                                </div>
+                            </div>
                         </div>
 
                         <input type="hidden" asp-for="LoaiNguoi" value="HocVien" />

@@ -23,6 +23,7 @@
         /* Sidebar */
         .sidebar {
             min-height: 100vh;
+            height: 100vh;
             background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             position: fixed;
             top: 0;
@@ -30,19 +31,39 @@
             width: var(--sidebar-width);
             z-index: 1000;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
         }
 
         .sidebar-brand {
             color: #fff;
-            padding: 20px;
+            padding: 1px;
             text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             text-decoration: none;
+            flex-shrink: 0;
         }
 
         .sidebar-brand h4 {
             margin: 0;
-            font-weight: 600;
+            font-weight: auto;
         }
 
         .sidebar .nav-link {
@@ -81,6 +102,7 @@
         /* Main Content */
         .main-content {
             margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
             min-height: 100vh;
         }
 
@@ -93,7 +115,10 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: relative;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: var(--sidebar-width);
             z-index: 1000;
         }
 
@@ -179,7 +204,7 @@
 
         /* Content Area */
         .content-area {
-            padding: 20px;
+            padding: 5px;
         }
 
         /* Responsive */
@@ -195,6 +220,11 @@
 
             .main-content {
                 margin-left: 0;
+                margin-top: var(--header-height);
+            }
+
+            .top-header {
+                left: 0;
             }
 
             .mobile-toggle {
@@ -207,7 +237,6 @@
                 display: none !important;
             }
         }
-
 
         .mobile-toggle {
             border: none;
@@ -220,123 +249,124 @@
             min-width: 100%;
             box-sizing: border-box;
         }
-
-        /* Responsive Design */
-        media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-
-            .sidebar.show {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .mobile-toggle {
-                display: block !important;
-            }
-        }
-
-        media (min-width: 769px) {
-            .mobile-toggle {
-                display: none !important;
-            }
-        }
     </style>
 </head>
 <body>
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
-        <a href="@Url.Action("Index", "Home")" class="sidebar-brand">
-            <h4><i class="bi bi-mortarboard-fill"></i> QLHV</h4>
-        </a>
-        
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" asp-controller="Home" asp-action="@(Context.Session.GetString("UserRole") == "Admin" ? "Index" : "Profile")">
-                    <i class="bi bi-house-door me-2"></i>
-                    Trang chủ
-                </a>
-            </li>
-            
+    <!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+    <a href="@Url.Action("Index", "Home")" class="sidebar-brand">
+        <h4><i class="bi bi-mortarboard-fill"></i> QLHV</h4>
+    </a>
+    
+    <ul class="nav flex-column">
+        <!-- Trang chủ: Hiển thị cho tất cả -->
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Home" asp-action="@(Context.Session.GetString("UserRole") == "Admin" ? "Index" : "Profile")">
+                <i class="bi bi-house-door me-2"></i> Trang chủ
+            </a>
+        </li>
+
+        <!-- Hệ thống: Chỉ Admin -->
+        @if (Context.Session.GetString("UserRole") == "Admin")
+        {
             <li class="nav-item">
                 <div class="sidebar-header">Hệ thống</div>
             </li>
-            
             <li class="nav-item">
                 <a class="nav-link" asp-controller="User" asp-action="Index">
                     <i class="bi bi-person-gear"></i> Quản lý người dùng
                 </a>
             </li>
-            
+        }
+
+        <!-- Danh mục: Hiển thị cho Admin, LopTruongLao, LopTruongCam -->
+        @if (Context.Session.GetString("UserRole") is "Admin" or "LopTruongLao" or "LopTruongCam")
+        {
             <li class="nav-item">
                 <div class="sidebar-header">Danh mục</div>
             </li>
-            
+        }
+
+        <!-- Nhân viên HQT: Chỉ Admin -->
+        @if (Context.Session.GetString("UserRole") == "Admin")
+        {
             <li class="nav-item">
                 <a class="nav-link" asp-controller="NhanVien" asp-action="Index">
                     <i class="bi bi-people-fill"></i> Nhân viên HQT
                 </a>
             </li>
-            
+        }
+
+        <!-- Học viên Lào: Admin hoặc LopTruongLao -->
+        @if (Context.Session.GetString("UserRole") is "Admin" or "LopTruongLao")
+        {
             <li class="nav-item">
                 <a class="nav-link" asp-controller="HocVienLao" asp-action="Index">
                     <i class="bi bi-flag-fill"></i> Học viên Lào
                 </a>
             </li>
-            
+        }
+
+        <!-- Học viên Cam: Admin hoặc LopTruongCam -->
+        @if (Context.Session.GetString("UserRole") is "Admin" or "LopTruongCam")
+        {
             <li class="nav-item">
                 <a class="nav-link" asp-controller="HocVienCam" asp-action="Index">
                     <i class="bi bi-flag"></i> Học viên Cam
                 </a>
             </li>
-            
+        }
+
+        <!-- Đảng viên: Admin, LopTruongLao, LopTruongCam -->
+        @if (Context.Session.GetString("UserRole") is "Admin" or "LopTruongLao" or "LopTruongCam")
+        {
             <li class="nav-item">
                 <a class="nav-link" asp-controller="DangVien" asp-action="Index">
                     <i class="bi bi-award-fill"></i> Đảng viên
                 </a>
             </li>
-            
+        }
+
+        <!-- Quản lý: Hiển thị cho Admin, LopTruongLao, LopTruongCam -->
+        @if (Context.Session.GetString("UserRole") is "Admin" or "LopTruongLao" or "LopTruongCam")
+        {
             <li class="nav-item">
                 <div class="sidebar-header">Quản lý</div>
             </li>
-            
             <li class="nav-item">
                 <a class="nav-link" asp-controller="KhenThuong" asp-action="Index">
                     <i class="bi bi-trophy-fill"></i> Khen thưởng
                 </a>
             </li>
-            
             <li class="nav-item">
                 <a class="nav-link" asp-controller="KyLuat" asp-action="Index">
                     <i class="bi bi-exclamation-triangle-fill"></i> Kỷ luật
                 </a>
             </li>
-            
             <li class="nav-item">
                 <a class="nav-link" asp-controller="PhongTraoThiDua" asp-action="Index">
                     <i class="bi bi-bullseye"></i> Phong trào thi đua
                 </a>
             </li>
-            
             <li class="nav-item">
                 <a class="nav-link" asp-controller="KetQuaHocTap" asp-action="Index">
                     <i class="bi bi-journal-text"></i> Kết quả học tập
                 </a>
             </li>
-            
-            
+        }
+
+        <!-- Thống kê: Chỉ Admin -->
+        @if (Context.Session.GetString("UserRole") == "Admin")
+        {
             <li class="nav-item">
                 <a class="nav-link" asp-controller="ThongKe" asp-action="Index">
                     <i class="bi bi-bar-chart-fill"></i> Thống kê
                 </a>
             </li>
-        </ul>
-    </nav>
+        }
+    </ul>
+</nav>
 
     <!-- Main content -->
     <div class="main-content">

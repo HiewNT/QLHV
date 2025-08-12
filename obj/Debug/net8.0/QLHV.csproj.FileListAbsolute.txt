@@ -143,3 +143,5 @@ D:\Code\Job2\QLHV\obj\Debug\net8.0\refint\QLHV.dll
 D:\Code\Job2\QLHV\obj\Debug\net8.0\QLHV.pdb
 D:\Code\Job2\QLHV\obj\Debug\net8.0\QLHV.genruntimeconfig.cache
 D:\Code\Job2\QLHV\obj\Debug\net8.0\ref\QLHV.dll
+D:\Code\Job2\QLHV\obj\Debug\net8.0\QLHV.sourcelink.json
+D:\Code\Job2\QLHV\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
