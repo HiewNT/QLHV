@@ -74,8 +74,10 @@ namespace QLHV.Controllers
             if (user.MaNguoiNavigation?.LoaiNguoi == "HocVien")
             {
                 ketQuaHocTap = await _context.KetQuaHocTaps
+                    .Include(kq => kq.MaHocKyNavigation)
                     .Where(kq => kq.MaNguoi == user.MaNguoi)
-                    .OrderByDescending(kq => kq.NamHoc)
+                    .OrderByDescending(kq => kq.MaHocKyNavigation.NamHoc)
+                    .ThenBy(kq => kq.MaHocKyNavigation.MaHocKy)
                     .ToListAsync();
             }
 

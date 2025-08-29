@@ -22,10 +22,61 @@ public class NhanVienController : Controller
     }
 
     // GET: NhanVien/GetData - For DataTables AJAX
-    public async Task<IActionResult> GetData()
+    public async Task<IActionResult> GetData(
+        string? hoTen = null,
+        string? capBac = null,
+        string? chucVu = null,
+        string? truongHoc = null,
+        string? quaTruong = null,
+        int? maTrinhDo = null,
+        int? maLoaiDangVien = null,
+        bool? doanVien = null)
     {
-        var nhanViens = await _context.Nguois
-            .Where(n => n.LoaiNguoi == "NhanVien")
+        var query = _context.Nguois
+            .Where(n => n.LoaiNguoi == "NhanVien");
+
+        // Áp dụng các bộ lọc
+        if (!string.IsNullOrEmpty(hoTen))
+        {
+            query = query.Where(n => n.HoTen.Contains(hoTen));
+        }
+
+        if (!string.IsNullOrEmpty(capBac))
+        {
+            query = query.Where(n => n.CapBac != null && n.CapBac.Contains(capBac));
+        }
+
+        if (!string.IsNullOrEmpty(chucVu))
+        {
+            query = query.Where(n => n.ChucVu != null && n.ChucVu.Contains(chucVu));
+        }
+
+        if (!string.IsNullOrEmpty(truongHoc))
+        {
+            query = query.Where(n => n.TruongHoc != null && n.TruongHoc.Contains(truongHoc));
+        }
+
+        if (!string.IsNullOrEmpty(quaTruong))
+        {
+            query = query.Where(n => n.QuaTruong != null && n.QuaTruong.ToString().Contains(quaTruong));
+        }
+
+        if (maTrinhDo.HasValue)
+        {
+            query = query.Where(n => n.MaTrinhDo == maTrinhDo.Value);
+        }
+
+        if (maLoaiDangVien.HasValue)
+        {
+            query = query.Where(n => n.MaLoaiDangVien == maLoaiDangVien.Value);
+        }
+
+        if (doanVien.HasValue)
+        {
+            query = query.Where(n => n.DoanVien == doanVien.Value);
+        }
+
+        var nhanViens = await query
             .Include(n => n.MaTrinhDoNavigation)
             .Include(n => n.MaLoaiDangVienNavigation)
             .Include(n => n.KhenThuongNguois)

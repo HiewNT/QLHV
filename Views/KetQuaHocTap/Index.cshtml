@@ -35,48 +35,7 @@
         </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                <div class="card-body text-center">
-                    <div class="d-flex align-items-center justify-content-center mb-3">
-                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
-                            <i class="bi bi-mortarboard text-primary fs-1"></i>
-                        </div>
-                    </div>
-                    <h4 class="text-primary mb-1" id="totalKetQua">-</h4>
-                    <p class="text-muted mb-0">Tổng kết quả</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                <div class="card-body text-center">
-                    <div class="d-flex align-items-center justify-content-center mb-3">
-                        <div class="bg-success bg-opacity-10 p-3 rounded-circle">
-                            <i class="bi bi-people text-success fs-1"></i>
-                        </div>
-                    </div>
-                    <h4 class="text-success mb-1" id="totalHocVien">-</h4>
-                    <p class="text-muted mb-0">Học viên</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
-                <div class="card-body text-center">
-                    <div class="d-flex align-items-center justify-content-center mb-3">
-                        <div class="bg-info bg-opacity-10 p-3 rounded-circle">
-                            <i class="bi bi-calendar-year text-info fs-1"></i>
-                        </div>
-                    </div>
-                    <h4 class="text-info mb-1" id="namHocHienTai">-</h4>
-                    <p class="text-muted mb-0">Năm học hiện tại</p>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Main Table Card -->
     <div class="card border-0 shadow-sm" style="border-radius: 15px;">
@@ -98,35 +57,40 @@
                                 <label class="btn btn-outline-secondary btn-sm" for="qtCam">Campuchia</label>
                             </div>
                         }
-                        <select id="namHocFilter" class="form-select form-select-sm" style="width:auto; min-width: 160px;">
-                            <option value="">Tất cả năm học</option>
-                            @if (ViewBag.NamHocList != null)
-                            {
-                                foreach (var n in (IEnumerable<string>)ViewBag.NamHocList)
+                        
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="hocKyDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-funnel me-1"></i>Học kỳ
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="hocKyDropdown">
+                                <li><a class="dropdown-item" href="#" data-hoc-ky="">Tất cả học kỳ</a></li>
+                                @if (ViewBag.HocKyList != null)
                                 {
-                                    <option value="@n">@n</option>
+                                    @foreach (var hocKy in ViewBag.HocKyList)
+                                    {
+                                        <li><a class="dropdown-item" href="#" data-hoc-ky="@hocKy.MaHocKy">@hocKy.TenHocKy - @hocKy.NamHoc</a></li>
+                                    }
                                 }
-                            }
-                        </select>
+                            </ul>
+                        </div>
                     </div>
-                    <button class="btn btn-outline-primary btn-sm" onclick="table.ajax.reload()">
-                        <i class="bi bi-arrow-clockwise me-1"></i>Làm mới
-                    </button>
                 </div>
             </div>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table id="ketQuaTable" class="table table-hover mb-0" style="width:100%">
-                    <thead class="table-primary">
+                <table id="ketQuaTable" class="table table-hover align-middle mb-0" style="width:100%">
+                    <thead class="bg-light">
                         <tr>
-                            <th class="text-center" style="width: 80px">Mã</th>
-                            <th style="width: 120px">Mã học viên</th>
-                            <th>Họ và tên</th>
-                            <th class="text-center" style="width: 120px">Năm học</th>
-                            <th class="text-center" style="width: 120px">Điểm TB</th>
-                            <th>Ghi chú</th>
-                            <th class="text-center" style="width: 150px">Thao tác</th>
+                            <th class="fw-bold text-primary border-0 py-3">Học viên</th>
+                            <th class="fw-bold text-primary border-0 py-3">Học kỳ</th>
+                            <th class="fw-bold text-primary border-0 py-3">Năm học</th>
+                            <th class="fw-bold text-primary border-0 py-3">Điểm TB</th>
+                            <th class="fw-bold text-primary border-0 py-3">Ghi chú</th>
+                            @if (canManage)
+                            {
+                                <th class="fw-bold text-primary border-0 py-3 text-center" style="width:120px">Thao tác</th>
+                            }
                         </tr>
                     </thead>
                 </table>
@@ -139,230 +103,219 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    
+    <style>
+        .table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f8f9ff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+        }
+        
+        .table td {
+            padding: 15px 12px;
+            vertical-align: middle;
+            border: none;
+        }
+        
+        .btn-group .btn {
+            border-radius: 6px !important;
+            transition: all 0.2s ease;
+            margin: 0 1px;
+        }
+        
+        .btn-group .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* DataTables custom styling */
+        .dataTables_wrapper .dataTables_info {
+            padding-top: 1rem;
+            padding-left: 1.5rem;
+            color: #6c757d;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate {
+            padding-top: 1rem;
+            padding-right: 1.5rem;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 6px !important;
+            margin: 0 2px;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%) !important;
+            border-color: #0d6efd !important;
+        }
+
+        .dataTables_wrapper .dataTables_length {
+            padding-top: 1rem;
+            padding-left: 1.5rem;
+        }
+        
+        .dataTables_wrapper .dataTables_filter {
+            padding-top: 1rem;
+            padding-right: 1.5rem;
+        }
+        
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .dataTables_wrapper .dataTables_length select {
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+
+        @@keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fade-in 0.3s ease forwards;
+        }
+    </style>
+    
     <script>
-        let table;
-        const canManage = @canManage.ToString().ToLower();
+        let dataTable;
+        let currentQuocTich = '';
+        let currentHocKy = '';
         
         $(document).ready(function() {
-            table = $('#ketQuaTable').DataTable({
-                ajax: {
-                    url: '@Url.Action("GetData")',
-                    type: 'GET',
-                    datatype: 'json',
-                    data: function(d) {
-                        // Chỉ gửi quốc tịch nếu bộ lọc tồn tại và được chọn
-                        const qt = getSelectedQt();
-                        if (qt) d.quocTich = qt;
-                        
-                        const nh = $('#namHocFilter').val();
-                        if (nh) d.namHoc = nh;
-                    },
-                    dataSrc: function(json) {
-                        updateStatistics(json.data);
-                        return json.data;
+            dataTable = $('#ketQuaTable').DataTable({
+                "processing": true,
+                "serverSide": false,
+                "ajax": {
+                    "url": "@Url.Action("GetData")",
+                    "type": "GET",
+                    "data": function(d) {
+                        d.quocTich = currentQuocTich;
+                        d.maHocKy = currentHocKy;
                     }
                 },
-                columns: [
+                "columns": [
+                    { "data": "hoTen" },
+                    { "data": "hocKy" },
+                    { "data": "namHoc" },
                     { 
-                        data: 'maKetQua',
-                        className: 'text-center fw-bold'
-                    },
-                    { 
-                        data: 'maNguoi',
-                        className: 'fw-semibold'
-                    },
-                    { 
-                        data: 'hoTen',
-                        className: 'fw-semibold'
-                    },
-                    { 
-                        data: 'namHoc',
-                        className: 'text-center',
-                        render: function(data) {
-                            return data ? `<span class="badge bg-info">${data}</span>` : '<span class="text-muted">-</span>';
-                        }
-                    },
-                    { 
-                        data: 'diemTrungBinh',
-                        className: 'text-center',
-                        render: function(data) {
-                            if (!data && data !== 0) return '<span class="text-muted">-</span>';
-                            const diem = parseFloat(data);
-                            let badgeClass = 'bg-secondary';
-                            if (diem >= 8.0) badgeClass = 'bg-success';
-                            else if (diem >= 6.5) badgeClass = 'bg-warning';
-                            else if (diem >= 5.0) badgeClass = 'bg-info';
-                            else badgeClass = 'bg-danger';
-                            
-                            return `<span class="badge ${badgeClass} fs-6">${diem.toFixed(1)}</span>`;
-                        }
-                    },
-                    { 
-                        data: 'ghiChu',
-                        render: function(data) {
-                            if (!data) return '<span class="text-muted">Không có ghi chú</span>';
-                            return data.length > 50 ? data.substring(0, 50) + '...' : data;
-                        }
-                    },
-                    {
-                        data: 'maKetQua',
-                        orderable: false,
-                        className: 'text-center',
-                        render: function(data) {
-                            if (canManage) {
-                                return `
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="@Url.Action("Details")/${data}" class="btn btn-outline-primary" title="Xem chi tiết">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="@Url.Action("Edit")/${data}" class="btn btn-outline-warning" title="Sửa">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <a href="@Url.Action("Delete")/${data}" class="btn btn-outline-danger" title="Xóa">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    </div>`;
-                            } else {
-                                return `
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="@Url.Action("Details")/${data}" class="btn btn-outline-primary" title="Xem chi tiết">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </div>`;
+                        "data": "diemTrungBinh",
+                        "render": function(data) {
+                            if (data !== null && data !== undefined) {
+                                return `<span class="badge bg-primary px-3 py-2">${data}</span>`;
                             }
+                            return '<span class="badge bg-light text-dark px-3 py-2">N/A</span>';
                         }
+                    },
+                    { 
+                        "data": "ghiChu",
+                        "render": function(data) {
+                            return data || '<span class="text-muted">Không có</span>';
+                        }
+                    },
+                    @if (canManage)
+                    {
+                        <text>
+                        {
+                            "data": "maKetQua",
+                            "render": function(data, type, row) {
+                                return '<div class="btn-group btn-group-sm d-flex justify-content-center" role="group">' +
+                                    '<a href="@Url.Action("Details")/' + data + '" class="btn btn-outline-info shadow-sm" title="Chi tiết" style="border-radius: 6px;">' +
+                                    '<i class="bi bi-eye"></i></a>' +
+                                    '<a href="@Url.Action("Edit")/' + data + '" class="btn btn-outline-primary shadow-sm" title="Sửa" style="border-radius: 6px;">' +
+                                    '<i class="bi bi-pencil"></i></a>' +
+                                    '<a href="@Url.Action("Delete")/' + data + '" class="btn btn-outline-danger shadow-sm" title="Xóa" style="border-radius: 6px;">' +
+                                    '<i class="bi bi-trash"></i></a>' +
+                                    '</div>';
+                            },
+                            "orderable": false
+                        }
+                        </text>
                     }
                 ],
-                language: { 
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json',
-                    search: "Tìm kiếm:",
-                    lengthMenu: "Hiển thị _MENU_ bản ghi",
-                    info: "Hiển thị _START_ đến _END_ trong tổng số _TOTAL_ bản ghi",
-                    infoEmpty: "Không có bản ghi nào",
-                    infoFiltered: "(được lọc từ _MAX_ bản ghi)",
-                    zeroRecords: "Không tìm thấy bản ghi nào"
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
                 },
-                pageLength: 10,
-                order: [[0, 'desc']],
-                responsive: true,
-                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
-                     '<"row"<"col-sm-12"tr>>' +
-                     '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
-                drawCallback: function() {
-                    // Thêm hiệu ứng hover cho các nút
-                    $('.btn-group .btn').hover(
-                        function() { $(this).addClass('shadow-sm'); },
-                        function() { $(this).removeClass('shadow-sm'); }
-                    );
+                "pageLength": 25,
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Tất cả"]],
+                "responsive": true,
+                "scrollX": true,
+                "order": [[0, "asc"]],
+                "drawCallback": function() {
+                    // Add animation to newly loaded rows
+                    $('#ketQuaTable tbody tr').each(function(index) {
+                        $(this).css('animation-delay', (index * 0.05) + 's');
+                        $(this).addClass('fade-in');
+                    });
+                    
+                    // Update statistics
+                    updateStatistics();
                 }
             });
-        });
 
-        function updateStatistics(data) {
-            const totalKetQua = data.length;
-            const uniqueHocVien = [...new Set(data.map(item => item.maNguoi))].length;
-            
-            // Tính điểm trung bình chung
-            const validDiem = data.filter(item => item.diemTrungBinh != null);
-            const diemTrungBinh = validDiem.length > 0 
-                ? (validDiem.reduce((sum, item) => sum + parseFloat(item.diemTrungBinh), 0) / validDiem.length).toFixed(1)
-                : 0;
-            
-            // Lấy năm học hiện tại (năm hiện tại - 1)
-            const currentYear = new Date().getFullYear();
-            const namHocHienTai = `${currentYear - 1}-${currentYear}`;
-
-            $('#totalKetQua').text(totalKetQua);
-            $('#totalHocVien').text(uniqueHocVien);
-            $('#diemTrungBinh').text(diemTrungBinh);
-            $('#namHocHienTai').text(namHocHienTai);
-        }
-
-        function getSelectedQt() {
-            // Nếu là LopTruongLao hoặc LopTruongCam thì không cần lọc (đã được lọc theo role)
-            const userRole = '@userRole';
-            if (userRole === 'LopTruongLao' || userRole === 'LopTruongCam') {
-                return '';
-            }
-            
-            // Nếu có bộ lọc quốc tịch thì trả về giá trị được chọn
-            if ($('#qtLao').length && $('#qtLao').is(':checked')) return 'Lào';
-            if ($('#qtCam').length && $('#qtCam').is(':checked')) return 'Campuchia';
-            return '';
-        }
-
-        // Bind event cho bộ lọc quốc tịch nếu tồn tại
-        if ($('input[name="qtFilter"]').length) {
-            $('input[name="qtFilter"]').on('change', function () {
-                table.ajax.reload();
+            // Xử lý bộ lọc quốc tịch
+            $('input[name="qtFilter"]').change(function() {
+                if (this.id === 'qtAll') {
+                    currentQuocTich = '';
+                } else if (this.id === 'qtLao') {
+                    currentQuocTich = 'Lào';
+                } else if (this.id === 'qtCam') {
+                    currentQuocTich = 'Campuchia';
+                }
+                dataTable.ajax.reload();
             });
-        }
-        $('#namHocFilter').on('change', function () {
-            table.ajax.reload();
+
+            // Xử lý bộ lọc học kỳ
+            $('.dropdown-item[data-hoc-ky]').click(function(e) {
+                e.preventDefault();
+                currentHocKy = $(this).data('hoc-ky');
+                $('#hocKyDropdown').text($(this).text());
+                dataTable.ajax.reload();
+            });
+
+            function updateStatistics() {
+                var data = dataTable.data().toArray();
+                $('#totalKetQua').text(data.length);
+                
+                var uniqueHocVien = [...new Set(data.map(item => item.maNguoi))];
+                $('#totalHocVien').text(uniqueHocVien.length);
+                
+                // Tìm học kỳ hiện tại (có thể cần điều chỉnh logic này)
+                if (data.length > 0) {
+                    var currentHocKyData = data.find(item => item.hocKy && item.namHoc);
+                    if (currentHocKyData) {
+                        $('#hocKyHienTai').text(currentHocKyData.hocKy + ' - ' + currentHocKyData.namHoc);
+                    } else {
+                        $('#hocKyHienTai').text('N/A');
+                    }
+                } else {
+                    $('#hocKyHienTai').text('0');
+                }
+            }
         });
     </script>
 }
-
-<style>
-    .card {
-        transition: all 0.3s ease;
-    }
-    
-    .card:hover {
-        transform: translateY(-2px);
-    }
-    
-    .btn {
-        border-radius: 8px;
-        transition: all 0.3s ease;
-    }
-    
-    .btn:hover {
-        transform: translateY(-1px);
-    }
-    
-    .table th {
-        border-top: none;
-        font-weight: 600;
-        background-color: #e3f2fd !important;
-    }
-    
-    .table td {
-        vertical-align: middle;
-    }
-    
-    .badge {
-        font-size: 0.75em;
-    }
-    
-    .btn-group .btn {
-        border-radius: 6px !important;
-    }
-    
-    .dataTables_wrapper .dataTables_length select,
-    .dataTables_wrapper .dataTables_filter input {
-        border-radius: 8px;
-        border: 1px solid #dee2e6;
-    }
-    
-    .dataTables_wrapper .dataTables_paginate .paginate_button {
-        border-radius: 6px;
-        margin: 0 2px;
-    }
-    
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-        background: #0d6efd !important;
-        border-color: #0d6efd !important;
-    }
-    
-    .rounded-circle {
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-</style>
 
 
 

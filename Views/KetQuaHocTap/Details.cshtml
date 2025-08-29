@@ -1,187 +1,168 @@
 @model QLHV.Models.KetQuaHocTap
 @{
     ViewData["Title"] = "Chi tiết kết quả học tập";
+    var userRole = Context.Session.GetString("UserRole") ?? string.Empty;
+    bool canManage = userRole == "Admin" || userRole == "LopTruongLao" || userRole == "LopTruongCam";
 }
 
 <div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-xl-8">
-            <div class="card shadow-sm border-0" style="border-radius: 15px;">
-                <div class="card-header bg-primary text-white border-0" style="border-radius: 15px 15px 0 0;">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <h5 class="card-title mb-0">
-                            <i class="bi bi-mortarboard me-2"></i>Chi tiết kết quả học tập
-                        </h5>
-                        <a asp-action="Index" class="btn btn-outline-light btn-sm">
-                            <i class="bi bi-arrow-left me-2"></i>Trở về
-                        </a>
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="bg-info bg-gradient rounded-circle p-3 me-3">
+                        <i class="bi bi-eye-fill text-white fs-4"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-dark mb-1 fw-bold">@ViewData["Title"]</h2>
+                        <p class="text-muted mb-0">Xem chi tiết thông tin kết quả học tập</p>
                     </div>
                 </div>
+                <div class="d-flex gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                        <i class="bi bi-arrow-left me-2"></i>Quay lại
+                    </a>
+                    @if (canManage)
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.MaKetQua" class="btn btn-warning btn-lg">
+                            <i class="bi bi-pencil me-2"></i>Sửa
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-gradient-info text-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Thông tin chi tiết
+                    </h5>
+                </div>
                 <div class="card-body p-4">
-                    <!-- Thông tin kết quả học tập -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-primary">Mã kết quả</label>
-                                <div class="form-control-plaintext">@Model.MaKetQua</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-primary">Mã học viên</label>
-                                <div class="form-control-plaintext">@Model.MaNguoi</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-primary">Họ và tên</label>
-                                <div class="form-control-plaintext">@Model.MaNguoiNavigation?.HoTen</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-primary">Năm học</label>
-                                <div class="form-control-plaintext">
-                                    @if (!string.IsNullOrEmpty(Model.NamHoc))
-                                    {
-                                        <span class="badge bg-info fs-6">@Model.NamHoc</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Chưa cập nhật</span>
-                                    }
+                    <div class="row">
+                        <!-- Thông tin học viên -->
+                        <div class="col-12 mb-4">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary mb-3">
+                                        <i class="bi bi-person-badge me-2"></i>Thông tin học viên
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Mã học viên:</strong>
+                                                <span class="badge bg-primary ms-2">@Model.MaNguoi</span>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Họ và tên:</strong>
+                                                <span class="ms-2">@(Model.MaNguoiNavigation?.HoTen ?? "N/A")</span>
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-primary">Điểm trung bình</label>
-                                <div class="form-control-plaintext">
-                                    @if (Model.DiemTrungBinh.HasValue)
-                                    {
-                                        var diem = (double)Model.DiemTrungBinh.Value;
-                                        string badgeClass = "bg-secondary";
-                                        if (diem >= 8.0) badgeClass = "bg-success";
-                                        else if (diem >= 6.5) badgeClass = "bg-warning";
-                                        else if (diem >= 5.0) badgeClass = "bg-info";
-                                        else badgeClass = "bg-danger";
-                                        
-                                        <span class="badge @badgeClass fs-5">@diem.ToString("F1")</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Chưa có điểm</span>
-                                    }
+
+                        <!-- Thông tin học kỳ -->
+                        <div class="col-12 mb-4">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary mb-3">
+                                        <i class="bi bi-calendar-event me-2"></i>Thông tin học kỳ
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Học kỳ:</strong>
+                                                <span class="badge bg-info ms-2">@(Model.MaHocKyNavigation?.TenHocKy ?? "N/A")</span>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Năm học:</strong>
+                                                <span class="badge bg-success ms-2">@(Model.MaHocKyNavigation?.NamHoc ?? "N/A")</span>
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-primary">Xếp loại</label>
-                                <div class="form-control-plaintext">
-                                    @if (Model.DiemTrungBinh.HasValue)
-                                    {
-                                        var diem = (double)Model.DiemTrungBinh.Value;
-                                        string xepLoai = "";
-                                        string badgeClass = "bg-secondary";
-                                        
-                                        if (diem >= 9.0)
-                                        {
-                                            xepLoai = "Xuất sắc";
-                                            badgeClass = "bg-success";
-                                        }
-                                        else if (diem >= 8.0)
-                                        {
-                                            xepLoai = "Giỏi";
-                                            badgeClass = "bg-success";
-                                        }
-                                        else if (diem >= 6.5)
-                                        {
-                                            xepLoai = "Khá";
-                                            badgeClass = "bg-warning";
-                                        }
-                                        else if (diem >= 5.0)
-                                        {
-                                            xepLoai = "Trung bình";
-                                            badgeClass = "bg-info";
-                                        }
-                                        else
-                                        {
-                                            xepLoai = "Yếu";
-                                            badgeClass = "bg-danger";
-                                        }
-                                        
-                                        <span class="badge @badgeClass fs-6">@xepLoai</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Chưa xếp loại</span>
-                                    }
+
+                        <!-- Thông tin kết quả -->
+                        <div class="col-12 mb-4">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary mb-3">
+                                        <i class="bi bi-star-fill me-2"></i>Kết quả học tập
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Điểm trung bình:</strong>
+                                                @if (Model.DiemTrungBinh.HasValue)
+                                                {
+                                                    var diem = Model.DiemTrungBinh.Value;
+                                                    string badgeClass = diem >= 8.0m ? "bg-success" : 
+                                                                       diem >= 6.5m ? "bg-warning" : 
+                                                                       diem >= 5.0m ? "bg-info" : "bg-danger";
+                                                    <span class="badge @badgeClass ms-2 fs-6">@diem.ToString("F1")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary ms-2">Chưa có điểm</span>
+                                                }
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong>Mã kết quả:</strong>
+                                                <span class="badge bg-dark ms-2">@Model.MaKetQua</span>
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Ghi chú -->
                         @if (!string.IsNullOrEmpty(Model.GhiChu))
                         {
-                            <div class="col-12">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-primary">Ghi chú</label>
-                                    <div class="form-control-plaintext">@Model.GhiChu</div>
+                            <div class="col-12 mb-4">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-primary mb-3">
+                                            <i class="bi bi-chat-text me-2"></i>Ghi chú
+                                        </h6>
+                                        <p class="mb-0">@Model.GhiChu</p>
+                                    </div>
                                 </div>
                             </div>
                         }
                     </div>
 
-                    <!-- Thông tin học viên -->
-                    @if (Model.MaNguoiNavigation != null)
-                    {
-                        <div class="border-top pt-4">
-                            <h6 class="text-primary mb-3">
-                                <i class="bi bi-person me-2"></i>Thông tin học viên
-                            </h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Quốc tịch</label>
-                                        <div class="form-control-plaintext">@Model.MaNguoiNavigation.QuocTich</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Ngày sinh</label>
-                                        <div class="form-control-plaintext">
-                                            @(Model.MaNguoiNavigation.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Loại người</label>
-                                        <div class="form-control-plaintext">@Model.MaNguoiNavigation.LoaiNguoi</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Cấp bậc</label>
-                                        <div class="form-control-plaintext">@Model.MaNguoiNavigation.CapBac</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-
                     <!-- Action Buttons -->
-                    <div class="border-top pt-4">
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Index" class="btn btn-secondary btn-lg px-4">
-                                <i class="bi bi-arrow-left me-2"></i>Trở về
-                            </a>
-                            <div class="d-flex gap-2">
-                                <a asp-action="Edit" asp-route-id="@Model.MaKetQua" class="btn btn-warning btn-lg px-4">
-                                    <i class="bi bi-pencil me-2"></i>Sửa
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex gap-3 justify-content-center">
+                                <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+                                    <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
                                 </a>
-                                <a asp-action="Delete" asp-route-id="@Model.MaKetQua" class="btn btn-danger btn-lg px-4">
-                                    <i class="bi bi-trash me-2"></i>Xóa
-                                </a>
+                                @if (canManage)
+                                {
+                                    <a asp-action="Edit" asp-route-id="@Model.MaKetQua" class="btn btn-warning btn-lg px-4">
+                                        <i class="bi bi-pencil me-2"></i>Sửa kết quả
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@Model.MaKetQua" class="btn btn-danger btn-lg px-4">
+                                        <i class="bi bi-trash me-2"></i>Xóa kết quả
+                                    </a>
+                                }
                             </div>
                         </div>
                     </div>
@@ -200,6 +181,11 @@
         transform: translateY(-2px);
     }
     
+    .badge {
+        font-size: 0.9em;
+        padding: 0.5em 0.8em;
+    }
+    
     .btn {
         border-radius: 8px;
         transition: all 0.3s ease;
@@ -207,19 +193,5 @@
     
     .btn:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    .form-control-plaintext {
-        padding: 0.375rem 0.75rem;
-        background-color: #f8f9fa;
-        border-radius: 0.375rem;
-        min-height: 38px;
-        display: flex;
-        align-items: center;
-    }
-    
-    .badge {
-        font-size: 0.875em;
     }
 </style>

@@ -18,30 +18,34 @@ public class KetQuaHocTapController : Controller
         // Lưu role để View có thể hiển thị phù hợp nếu cần
         ViewBag.UserRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
 
-        // Lấy danh sách năm học theo phân quyền
+        // Lấy danh sách học kỳ theo phân quyền
         var userRole = ViewBag.UserRole as string ?? string.Empty;
-        var namHocQuery = _context.KetQuaHocTaps
+        var hocKyQuery = _context.KetQuaHocTaps
             .Include(k => k.MaNguoiNavigation)
+            .Include(k => k.MaHocKyNavigation)
             .AsQueryable();
 
         if (userRole == "LopTruongLao")
         {
-            namHocQuery = namHocQuery.Where(k => k.MaNguoiNavigation.LoaiNguoi == "HocVien" && k.MaNguoiNavigation.QuocTich == "Lào");
+            hocKyQuery = hocKyQuery.Where(k => k.MaNguoiNavigation.LoaiNguoi == "HocVien" && k.MaNguoiNavigation.QuocTich == "Lào");
         }
         else if (userRole == "LopTruongCam")
         {
-            namHocQuery = namHocQuery.Where(k => k.MaNguoiNavigation.LoaiNguoi == "HocVien" && k.MaNguoiNavigation.QuocTich == "Campuchia");
+            hocKyQuery = hocKyQuery.Where(k => k.MaNguoiNavigation.LoaiNguoi == "HocVien" && k.MaNguoiNavigation.QuocTich == "Campuchia");
         }
 
-        var namHocList = await namHocQuery
-            .Where(k => k.NamHoc != null && k.NamHoc != "")
-            .Select(k => k.NamHoc!)
+        var hocKyList = await hocKyQuery
+            .Where(k => k.MaHocKyNavigation != null)
+            .Select(k => new { k.MaHocKyNavigation.MaHocKy, k.MaHocKyNavigation.TenHocKy, k.MaHocKyNavigation.NamHoc })
             .Distinct()
-            .OrderByDescending(n => n)
+            .OrderByDescending(h => h.NamHoc)
+            .ThenBy(h => h.MaHocKy)
             .ToListAsync();
-        ViewBag.NamHocList = namHocList;
+        ViewBag.HocKyList = hocKyList;
 
-        return View();
+        // Lấy danh sách kết quả học tập để truyền vào view
+        var ketQuaList = await hocKyQuery.ToListAsync();
+        return View(ketQuaList);
     }
 
     // GET: KetQuaHocTap/Create
@@ -55,17 +59,15 @@ public class KetQuaHocTapController : Controller
         }
 
         await PopulateNguoiSelectListForRole(userRole);
-        var model = new KetQuaHocTap
-        {
-            NamHoc = GetDefaultNamHoc()
-        };
+        await PopulateHocKySelectList(null, null);
+        var model = new KetQuaHocTapViewModel();
         return View(model);
     }
 
     // POST: KetQuaHocTap/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(KetQuaHocTap model)
+    public async Task<IActionResult> Create(KetQuaHocTapViewModel model)
     {
         var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
         if (userRole != "Admin" && userRole != "LopTruongLao" && userRole != "LopTruongCam")
@@ -85,13 +87,13 @@ public class KetQuaHocTapController : Controller
             }
         }
 
-        // Kiểm tra trùng lặp MaNguoi + NamHoc
-        if (!string.IsNullOrWhiteSpace(model.MaNguoi) && !string.IsNullOrWhiteSpace(model.NamHoc))
+        // Kiểm tra trùng lặp MaNguoi + MaHocKy
+        if (!string.IsNullOrWhiteSpace(model.MaNguoi) && model.MaHocKy > 0)
         {
-            var exists = await _context.KetQuaHocTaps.AnyAsync(k => k.MaNguoi == model.MaNguoi && k.NamHoc == model.NamHoc);
+            var exists = await _context.KetQuaHocTaps.AnyAsync(k => k.MaNguoi == model.MaNguoi && k.MaHocKy == model.MaHocKy);
             if (exists)
             {
-                ModelState.AddModelError(nameof(KetQuaHocTap.NamHoc), "Đã tồn tại kết quả cho học viên này trong năm học đã chọn");
+                ModelState.AddModelError(nameof(KetQuaHocTap.MaHocKy), "Đã tồn tại kết quả cho học viên này trong học kỳ đã chọn");
             }
         }
 
@@ -99,7 +101,10 @@ public class KetQuaHocTapController : Controller
         Nguoi? nguoi = null;
         if (!string.IsNullOrWhiteSpace(model.MaNguoi))
         {
-            nguoi = await _context.Nguois.FirstOrDefaultAsync(n => n.MaNguoi == model.MaNguoi);
+            nguoi = await _context.Nguois
+                .Where(n => n.MaNguoi == model.MaNguoi)
+                .Distinct()
+                .FirstOrDefaultAsync();
             if (!CanAccessNguoi(nguoi, userRole))
             {
                 ModelState.AddModelError(nameof(KetQuaHocTap.MaNguoi), "Bạn không có quyền chọn học viên này");
@@ -109,19 +114,29 @@ public class KetQuaHocTapController : Controller
         if (!ModelState.IsValid)
         {
             await PopulateNguoiSelectListForRole(userRole, model.MaNguoi);
+            await PopulateHocKySelectList(model.MaHocKy, model.MaNguoi);
             return View(model);
         }
 
-        var entity = new KetQuaHocTap
+        try
         {
-            MaNguoi = model.MaNguoi,
-            NamHoc = model.NamHoc,
-            DiemTrungBinh = model.DiemTrungBinh,
-            GhiChu = model.GhiChu
-        };
+            // Tạo entity mới và chỉ set các properties cần thiết
+            var entity = new KetQuaHocTap();
+            entity.MaNguoi = model.MaNguoi;
+            entity.MaHocKy = model.MaHocKy;
+            entity.DiemTrungBinh = model.DiemTrungBinh;
+            entity.GhiChu = model.GhiChu;
 
-        _context.KetQuaHocTaps.Add(entity);
-        await _context.SaveChangesAsync();
+            _context.KetQuaHocTaps.Add(entity);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "Lỗi khi lưu dữ liệu: " + ex.Message);
+            await PopulateNguoiSelectListForRole(userRole, model.MaNguoi);
+            await PopulateHocKySelectList(model.MaHocKy, model.MaNguoi);
+            return View(model);
+        }
         TempData["Success"] = "Thêm kết quả học tập thành công.";
         return RedirectToAction(nameof(Index));
     }
@@ -133,6 +148,7 @@ public class KetQuaHocTapController : Controller
 
         var ketQua = await _context.KetQuaHocTaps
             .Include(k => k.MaNguoiNavigation)
+            .Include(k => k.MaHocKyNavigation)
             .FirstOrDefaultAsync(k => k.MaKetQua == id);
         if (ketQua == null) return NotFound();
 
@@ -143,11 +159,8 @@ public class KetQuaHocTapController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        if (string.IsNullOrWhiteSpace(ketQua.NamHoc))
-        {
-            ketQua.NamHoc = GetDefaultNamHoc();
-        }
         await PopulateNguoiSelectListForRole(userRole, ketQua.MaNguoi);
+        await PopulateHocKySelectList(ketQua.MaHocKy);
         return View(ketQua);
     }
 
@@ -182,14 +195,14 @@ public class KetQuaHocTapController : Controller
             }
         }
 
-        // Kiểm tra trùng lặp MaNguoi + NamHoc (trừ bản ghi hiện tại)
-        if (!string.IsNullOrWhiteSpace(model.MaNguoi) && !string.IsNullOrWhiteSpace(model.NamHoc))
+        // Kiểm tra trùng lặp MaNguoi + MaHocKy (trừ bản ghi hiện tại)
+        if (!string.IsNullOrWhiteSpace(model.MaNguoi) && model.MaHocKy > 0)
         {
             var exists = await _context.KetQuaHocTaps
-                .AnyAsync(k => k.MaNguoi == model.MaNguoi && k.NamHoc == model.NamHoc && k.MaKetQua != id);
+                .AnyAsync(k => k.MaNguoi == model.MaNguoi && k.MaHocKy == model.MaHocKy && k.MaKetQua != id);
             if (exists)
             {
-                ModelState.AddModelError(nameof(KetQuaHocTap.NamHoc), "Đã tồn tại kết quả cho học viên này trong năm học đã chọn");
+                ModelState.AddModelError(nameof(KetQuaHocTap.MaHocKy), "Đã tồn tại kết quả cho học viên này trong học kỳ đã chọn");
             }
         }
 
@@ -197,7 +210,10 @@ public class KetQuaHocTapController : Controller
         Nguoi? nguoi = null;
         if (!string.IsNullOrWhiteSpace(model.MaNguoi))
         {
-            nguoi = await _context.Nguois.FirstOrDefaultAsync(n => n.MaNguoi == model.MaNguoi);
+            nguoi = await _context.Nguois
+                .Where(n => n.MaNguoi == model.MaNguoi)
+                .Distinct()
+                .FirstOrDefaultAsync();
             if (!CanAccessNguoi(nguoi, userRole))
             {
                 ModelState.AddModelError(nameof(KetQuaHocTap.MaNguoi), "Bạn không có quyền chọn học viên này");
@@ -207,22 +223,33 @@ public class KetQuaHocTapController : Controller
         if (!ModelState.IsValid)
         {
             await PopulateNguoiSelectListForRole(userRole, model.MaNguoi);
+            await PopulateHocKySelectList(model.MaHocKy, model.MaNguoi);
             return View(model);
         }
 
-        ketQua.MaNguoi = model.MaNguoi;
-        ketQua.NamHoc = model.NamHoc;
-        ketQua.DiemTrungBinh = model.DiemTrungBinh;
-        ketQua.GhiChu = model.GhiChu;
+        try
+        {
+            ketQua.MaNguoi = model.MaNguoi;
+            ketQua.MaHocKy = model.MaHocKy;
+            ketQua.DiemTrungBinh = model.DiemTrungBinh;
+            ketQua.GhiChu = model.GhiChu;
 
-        await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "Lỗi khi cập nhật dữ liệu: " + ex.Message);
+            await PopulateNguoiSelectListForRole(userRole, model.MaNguoi);
+            await PopulateHocKySelectList(model.MaHocKy, model.MaNguoi);
+            return View(model);
+        }
         TempData["Success"] = "Cập nhật kết quả học tập thành công.";
         return RedirectToAction(nameof(Index));
     }
 
     // GET: KetQuaHocTap/GetData
     [HttpGet]
-    public async Task<IActionResult> GetData(string? quocTich = null, string? namHoc = null)
+    public async Task<IActionResult> GetData(string? quocTich = null, int? maHocKy = null)
     {
         try
         {
@@ -232,6 +259,7 @@ public class KetQuaHocTapController : Controller
             // Xây dựng query cơ bản theo phân quyền
             var query = _context.KetQuaHocTaps
                 .Include(k => k.MaNguoiNavigation)
+                .Include(k => k.MaHocKyNavigation)
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -255,9 +283,9 @@ public class KetQuaHocTapController : Controller
                 query = query.Where(k => k.MaNguoiNavigation.QuocTich == quocTich);
             }
 
-            if (!string.IsNullOrWhiteSpace(namHoc))
+            if (maHocKy.HasValue)
             {
-                query = query.Where(k => k.NamHoc == namHoc);
+                query = query.Where(k => k.MaHocKy == maHocKy.Value);
             }
 
             var data = await query
@@ -266,7 +294,8 @@ public class KetQuaHocTapController : Controller
                     k.MaKetQua,
                     k.MaNguoi,
                     HoTen = k.MaNguoiNavigation != null ? k.MaNguoiNavigation.HoTen : string.Empty,
-                    k.NamHoc,
+                    HocKy = k.MaHocKyNavigation != null ? k.MaHocKyNavigation.TenHocKy : string.Empty,
+                    NamHoc = k.MaHocKyNavigation != null ? k.MaHocKyNavigation.NamHoc : string.Empty,
                     k.DiemTrungBinh,
                     k.GhiChu
                 })
@@ -289,6 +318,7 @@ public class KetQuaHocTapController : Controller
 
         var ketQua = await _context.KetQuaHocTaps
             .Include(k => k.MaNguoiNavigation)
+            .Include(k => k.MaHocKyNavigation)
             .FirstOrDefaultAsync(k => k.MaKetQua == id);
 
         if (ketQua == null) return NotFound();
@@ -303,7 +333,6 @@ public class KetQuaHocTapController : Controller
         return View(ketQua);
     }
 
-
     // GET: KetQuaHocTap/Delete/5
     public async Task<IActionResult> Delete(int? id)
     {
@@ -311,7 +340,8 @@ public class KetQuaHocTapController : Controller
 
         var ketQua = await _context.KetQuaHocTaps
             .Include(k => k.MaNguoiNavigation)
-            .FirstOrDefaultAsync(m => m.MaKetQua == id);
+            .Include(k => k.MaHocKyNavigation)
+            .FirstOrDefaultAsync(k => k.MaKetQua == id);
 
         if (ketQua == null) return NotFound();
 
@@ -333,7 +363,8 @@ public class KetQuaHocTapController : Controller
         var ketQua = await _context.KetQuaHocTaps
             .Include(k => k.MaNguoiNavigation)
             .FirstOrDefaultAsync(k => k.MaKetQua == id);
-        if (ketQua == null) return RedirectToAction(nameof(Index));
+
+        if (ketQua == null) return NotFound();
 
         var userRole = HttpContext.Session.GetString("UserRole") ?? string.Empty;
         if (!CanAccessNguoi(ketQua.MaNguoiNavigation, userRole))
@@ -348,130 +379,145 @@ public class KetQuaHocTapController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private bool KetQuaExists(int id)
+    private bool KetQuaHocTapExists(int id)
     {
         return _context.KetQuaHocTaps.Any(e => e.MaKetQua == id);
     }
 
-    // Helper: kiểm tra quyền truy cập theo role
-    private bool CanAccessNguoi(Nguoi? nguoi, string userRole)
+    private async Task PopulateNguoiSelectListForRole(string userRole, string? selectedValue = null)
     {
-        if (nguoi == null) return false;
-        if (userRole == "Admin") return true;
-        if (userRole == "LopTruongLao")
-            return nguoi.LoaiNguoi == "HocVien" && nguoi.QuocTich == "Lào";
-        if (userRole == "LopTruongCam")
-            return nguoi.LoaiNguoi == "HocVien" && nguoi.QuocTich == "Campuchia";
-        return false;
-    }
+        var query = _context.Nguois.AsQueryable();
 
-    private async Task PopulateNguoiSelectListForRole(string userRole, string? selectedMaNguoi = null)
-    {
-        List<Nguoi> nguoiList;
-        if (userRole == "Admin")
+        // Chỉ lấy HocVien, không lấy NhanVien
+        query = query.Where(n => n.LoaiNguoi == "HocVien");
+
+        // Áp dụng phân quyền
+        if (userRole == "LopTruongLao")
         {
-            nguoiList = await _context.Nguois
-                .Where(n => n.LoaiNguoi == "HocVien")
-                .ToListAsync();
-        }
-        else if (userRole == "LopTruongLao")
-        {
-            nguoiList = await _context.Nguois
-                .Where(n => n.LoaiNguoi == "HocVien" && n.QuocTich == "Lào")
-                .ToListAsync();
+            query = query.Where(n => n.QuocTich == "Lào");
         }
         else if (userRole == "LopTruongCam")
         {
-            nguoiList = await _context.Nguois
-                .Where(n => n.LoaiNguoi == "HocVien" && n.QuocTich == "Campuchia")
-                .ToListAsync();
+            query = query.Where(n => n.QuocTich == "Campuchia");
         }
-        else
+        else if (userRole != "Admin")
         {
-            nguoiList = new List<Nguoi>();
+            // Role khác không thấy ai
+            ViewData["MaNguoi"] = new SelectList(new List<SelectListItem>(), "Value", "Text", selectedValue);
+            return;
         }
-        
-        ViewBag.MaNguoi = new SelectList(nguoiList, "MaNguoi", "HoTen", selectedMaNguoi);
-        
-        // Tránh circular reference khi serialize JSON
-        var quocTichMap = nguoiList.ToDictionary(n => n.MaNguoi, n => n.QuocTich ?? string.Empty);
-        ViewBag.NguoiQuocTichMap = JsonSerializer.Serialize(quocTichMap, new JsonSerializerOptions 
-        { 
-            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles 
-        });
-        
-        // Đảm bảo NamHocOptions được set đúng
-        var namHocOptions = BuildNamHocOptions().ToList();
-        ViewBag.NamHocOptions = namHocOptions;
-        
-        // Debug log
-        System.Diagnostics.Debug.WriteLine($"PopulateNguoiSelectListForRole: userRole={userRole}, nguoiCount={nguoiList.Count}, namHocCount={namHocOptions.Count}");
+
+        var nguoiList = await query
+            .OrderBy(n => n.HoTen)
+            .Select(n => new SelectListItem
+            {
+                Value = n.MaNguoi,
+                Text = $"{n.MaNguoi} - {n.HoTen}"
+            })
+            .ToListAsync();
+
+        ViewData["MaNguoi"] = new SelectList(nguoiList, "Value", "Text", selectedValue);
     }
 
-    // Helper: parse decimal hỗ trợ cả dấu chấm và dấu phẩy
-    private bool TryParseDecimalFlexible(string? input, out decimal value)
+    private async Task PopulateHocKySelectList(int? selectedValue = null, string? maNguoi = null)
     {
-        value = 0m;
-        if (string.IsNullOrWhiteSpace(input)) return false;
+        var query = _context.HocKies.AsQueryable();
 
-        // Thử theo InvariantCulture (dấu chấm)
-        if (decimal.TryParse(input, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out value))
-            return true;
+        // Nếu có chọn học viên, loại bỏ những học kỳ đã có kết quả
+        if (!string.IsNullOrWhiteSpace(maNguoi))
+        {
+            var existingHocKyIds = await _context.KetQuaHocTaps
+                .Where(k => k.MaNguoi == maNguoi)
+                .Select(k => k.MaHocKy)
+                .ToListAsync();
 
-        // Thử thay dấu phẩy -> chấm
-        var replacedDot = input.Replace(',', '.');
-        if (decimal.TryParse(replacedDot, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out value))
-            return true;
+            query = query.Where(h => !existingHocKyIds.Contains(h.MaHocKy));
+        }
 
-        // Thử theo văn hóa vi-VN (dấu phẩy)
-        var vi = new System.Globalization.CultureInfo("vi-VN");
-        if (decimal.TryParse(input, System.Globalization.NumberStyles.Number, vi, out value))
-            return true;
+        var hocKyList = await query
+            .OrderByDescending(h => h.NamHoc)
+            .ThenBy(h => h.MaHocKy)
+            .Select(h => new SelectListItem
+            {
+                Value = h.MaHocKy.ToString(),
+                Text = $"{h.TenHocKy} - {h.NamHoc}"
+            })
+            .ToListAsync();
+
+        ViewData["MaHocKy"] = new SelectList(hocKyList, "Value", "Text", selectedValue);
+    }
+
+    private bool CanAccessNguoi(Nguoi? nguoi, string userRole)
+    {
+        if (nguoi == null) return false;
+
+        if (userRole == "Admin") return true;
+
+        if (userRole == "LopTruongLao")
+        {
+            return nguoi.LoaiNguoi == "HocVien" && nguoi.QuocTich == "Lào";
+        }
+
+        if (userRole == "LopTruongCam")
+        {
+            return nguoi.LoaiNguoi == "HocVien" && nguoi.QuocTich == "Campuchia";
+        }
 
         return false;
     }
 
-    private IEnumerable<string> BuildNamHocOptions(int yearsBack = 15, int yearsForward = 1)
+    private bool TryParseDecimalFlexible(string? input, out decimal result)
     {
-        var currentYear = DateTime.Now.Year;
-        var start = currentYear - yearsBack;
-        var end = currentYear + yearsForward;
-        for (var y = end; y >= start; y--)
-        {
-            var prev = y - 1;
-            yield return $"{prev}-{y}";
-        }
+        result = 0;
+        if (string.IsNullOrWhiteSpace(input)) return false;
+
+        // Thử parse trực tiếp
+        if (decimal.TryParse(input, out result)) return true;
+
+        // Thử thay thế dấu phẩy bằng dấu chấm
+        var normalized = input.Replace(',', '.');
+        if (decimal.TryParse(normalized, out result)) return true;
+
+        // Thử thay thế dấu chấm bằng dấu phẩy
+        normalized = input.Replace('.', ',');
+        return decimal.TryParse(normalized, out result);
     }
 
-    private string GetDefaultNamHoc()
-    {
-        var y = DateTime.Now.Year;
-        return $"{y - 1}-{y}";
-    }
-
-    // Remote validation: đảm bảo MaNguoi + NamHoc là duy nhất (trừ khi đang sửa bản ghi hiện tại)
-    [AcceptVerbs("Get", "Post")]
-    public async Task<IActionResult> ValidateUnique(string? namHoc, string? maNguoi, int? maKetQua)
-    {
-        if (string.IsNullOrWhiteSpace(maNguoi) || string.IsNullOrWhiteSpace(namHoc))
-        {
-            return Json(true);
-        }
-        var exists = await _context.KetQuaHocTaps
-            .AnyAsync(k => k.MaNguoi == maNguoi && k.NamHoc == namHoc && (!maKetQua.HasValue || k.MaKetQua != maKetQua.Value));
-        return Json(!exists);
-    }
-
+    // GET: KetQuaHocTap/GetAvailableHocKy - API để lấy danh sách học kỳ chưa có kết quả
     [HttpGet]
-    public async Task<IActionResult> CheckDuplicate(string maNguoi, string namHoc, int? id)
+    public async Task<IActionResult> GetAvailableHocKy(string maNguoi)
     {
-        if (string.IsNullOrWhiteSpace(maNguoi) || string.IsNullOrWhiteSpace(namHoc))
+        try
         {
-            return Json(new { exists = false });
+            if (string.IsNullOrWhiteSpace(maNguoi))
+            {
+                return Json(new List<object>());
+            }
+
+            // Lấy danh sách học kỳ đã có kết quả của học viên này
+            var existingHocKyIds = await _context.KetQuaHocTaps
+                .Where(k => k.MaNguoi == maNguoi)
+                .Select(k => k.MaHocKy)
+                .ToListAsync();
+
+            // Lấy danh sách học kỳ chưa có kết quả
+            var availableHocKy = await _context.HocKies
+                .Where(h => !existingHocKyIds.Contains(h.MaHocKy))
+                .OrderByDescending(h => h.NamHoc)
+                .ThenBy(h => h.MaHocKy)
+                .Select(h => new
+                {
+                    value = h.MaHocKy.ToString(),
+                    text = $"{h.TenHocKy} - {h.NamHoc}"
+                })
+                .ToListAsync();
+
+            return Json(availableHocKy);
         }
-        var exists = await _context.KetQuaHocTaps
-            .AnyAsync(k => k.MaNguoi == maNguoi && k.NamHoc == namHoc && (!id.HasValue || k.MaKetQua != id.Value));
-        return Json(new { exists });
+        catch (Exception)
+        {
+            return Json(new List<object>());
+        }
     }
 }
 

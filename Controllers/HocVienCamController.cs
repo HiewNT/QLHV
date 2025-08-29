@@ -22,10 +22,55 @@ public class HocVienCamController : Controller
     }
 
     // GET: HocVienCam/GetData - For DataTables AJAX
-    public async Task<IActionResult> GetData()
+    public async Task<IActionResult> GetData(
+        string? hoTen = null,
+        string? capBac = null,
+        string? chuyenNganh = null,
+        string? khoaHoc = null,
+        int? maTrinhDo = null,
+        int? maLoaiDangVien = null,
+        bool? doanVien = null)
     {
-        var hocViens = await _context.Nguois
-            .Where(h => h.LoaiNguoi == "HocVien" && h.QuocTich == "Campuchia")
+        var query = _context.Nguois
+            .Where(h => h.LoaiNguoi == "HocVien" && h.QuocTich == "Campuchia");
+
+        // Áp dụng các bộ lọc
+        if (!string.IsNullOrEmpty(hoTen))
+        {
+            query = query.Where(h => h.HoTen.Contains(hoTen));
+        }
+
+        if (!string.IsNullOrEmpty(capBac))
+        {
+            query = query.Where(h => h.CapBac != null && h.CapBac.Contains(capBac));
+        }
+
+        if (!string.IsNullOrEmpty(chuyenNganh))
+        {
+            query = query.Where(h => h.ChuyenNganh != null && h.ChuyenNganh.Contains(chuyenNganh));
+        }
+
+        if (!string.IsNullOrEmpty(khoaHoc))
+        {
+            query = query.Where(h => h.KhoaHoc != null && h.KhoaHoc.Contains(khoaHoc));
+        }
+
+        if (maTrinhDo.HasValue)
+        {
+            query = query.Where(h => h.MaTrinhDo == maTrinhDo.Value);
+        }
+
+        if (maLoaiDangVien.HasValue)
+        {
+            query = query.Where(h => h.MaLoaiDangVien == maLoaiDangVien.Value);
+        }
+
+        if (doanVien.HasValue)
+        {
+            query = query.Where(h => h.DoanVien == doanVien.Value);
+        }
+
+        var hocViens = await query
             .Include(h => h.MaTrinhDoNavigation)
             .Include(h => h.MaLoaiDangVienNavigation)
             .Include(h => h.KetQuaHocTaps)

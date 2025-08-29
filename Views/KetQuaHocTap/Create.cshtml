@@ -1,4 +1,4 @@
-@model QLHV.Models.KetQuaHocTap
+@model QLHV.Models.KetQuaHocTapViewModel
 @{
     ViewData["Title"] = "Thêm kết quả học tập";
     var userRole = Context.Session.GetString("UserRole") ?? string.Empty;
@@ -80,42 +80,28 @@
                             </div>
                         </div>
 
-                        <!-- Năm học và Điểm trung bình -->
+                        <!-- Học kỳ và Điểm trung bình -->
                         <div class="row mb-4">
                             <div class="col-md-6">
-                                <label asp-for="NamHoc" class="form-label fw-semibold">
-                                    <i class="bi bi-calendar-event me-2 text-primary"></i>Năm học
+                                <label asp-for="MaHocKy" class="form-label fw-semibold">
+                                    <i class="bi bi-calendar-event me-2 text-primary"></i>Học kỳ
                                 </label>
-                                <select asp-for="NamHoc" class="form-select form-select-lg" required>
-                                    @if (ViewBag.NamHocOptions != null)
-                                    {
-                                        foreach (var n in (IEnumerable<string>)ViewBag.NamHocOptions)
-                                        {
-                                            <option value="@n" selected="@(Model?.NamHoc == n)">@n</option>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <option value="">Không có năm học</option>
-                                    }
+                                <select asp-for="MaHocKy" class="form-select form-select-lg" asp-items="ViewBag.MaHocKy" required>
+                                    <option value="">-- Chọn học kỳ --</option>
                                 </select>
-                                <span asp-validation-for="NamHoc" class="text-danger small"></span>
+                                <span asp-validation-for="MaHocKy" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>Chọn học kỳ cần thêm kết quả
+                                </div>
                             </div>
-
                             <div class="col-md-6">
                                 <label asp-for="DiemTrungBinh" class="form-label fw-semibold">
                                     <i class="bi bi-star-fill me-2 text-primary"></i>Điểm trung bình
                                 </label>
-                                <div class="input-group input-group-lg">
-                                    <input asp-for="DiemTrungBinh" class="form-control" inputmode="decimal" 
-                                           placeholder="Ví dụ: 8.5" required />
-                                    <span class="input-group-text bg-light">
-                                        <i class="bi bi-123 text-muted"></i>
-                                    </span>
-                                </div>
+                                <input asp-for="DiemTrungBinh" class="form-control form-control-lg" type="text" placeholder="Nhập điểm từ 0-10 (VD: 8.5 hoặc 8,5)" required />
                                 <span asp-validation-for="DiemTrungBinh" class="text-danger small"></span>
                                 <div class="form-text">
-                                    <i class="bi bi-lightbulb me-1"></i>Hỗ trợ cả dấu chấm (.) và dấu phẩy (,)
+                                    <i class="bi bi-info-circle me-1"></i>Nhập điểm trung bình (0.0 - 10.0), có thể dùng dấu phẩy hoặc dấu chấm
                                 </div>
                             </div>
                         </div>
@@ -126,20 +112,22 @@
                                 <label asp-for="GhiChu" class="form-label fw-semibold">
                                     <i class="bi bi-chat-text me-2 text-primary"></i>Ghi chú
                                 </label>
-                                <textarea asp-for="GhiChu" class="form-control" rows="4" 
-                                          placeholder="Nhập ghi chú nếu cần..."></textarea>
+                                <textarea asp-for="GhiChu" class="form-control" rows="4" placeholder="Nhập ghi chú (nếu có)"></textarea>
                                 <span asp-validation-for="GhiChu" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>Ghi chú bổ sung về kết quả học tập
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Action Buttons -->
+                        <!-- Submit Buttons -->
                         <div class="row">
                             <div class="col-12">
-                                <div class="d-flex gap-3 justify-content-end pt-3 border-top">
+                                <div class="d-flex gap-3 justify-content-end">
                                     <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
-                                        <i class="bi bi-x-circle me-2"></i>Hủy
+                                        <i class="bi bi-x-circle me-2"></i>Hủy bỏ
                                     </a>
-                                    <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">
+                                    <button type="submit" class="btn btn-primary btn-lg px-4">
                                         <i class="bi bi-check-circle me-2"></i>Lưu kết quả
                                     </button>
                                 </div>
@@ -153,41 +141,90 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
     <script>
-        // Enhanced form validation and UX
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            const submitBtn = form.querySelector('button[type="submit"]');
-            
-            // Real-time validation feedback
-            form.addEventListener('input', function(e) {
-                const field = e.target;
-                if (field.hasAttribute('required') && field.value.trim() === '') {
-                    field.classList.add('is-invalid');
-                } else {
-                    field.classList.remove('is-invalid');
+        $(document).ready(function() {
+            // Custom validation for decimal input with comma and dot support
+            $('#DiemTrungBinh').on('input', function() {
+                var value = $(this).val();
+                if (value !== '') {
+                    // Replace comma with dot for parsing
+                    var normalizedValue = value.replace(',', '.');
+                    var numValue = parseFloat(normalizedValue);
+                    if (isNaN(numValue) || numValue < 0 || numValue > 10) {
+                        $(this).addClass('is-invalid');
+                        if (!$(this).next('.invalid-feedback').length) {
+                            $(this).after('<div class="invalid-feedback">Điểm phải từ 0 đến 10</div>');
+                        }
+                    } else {
+                        $(this).removeClass('is-invalid');
+                        $(this).next('.invalid-feedback').remove();
+                    }
                 }
             });
-            
-            // Form submission enhancement
-            form.addEventListener('submit', function(e) {
-                if (!form.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
+
+            // Auto-format decimal input - support both comma and dot
+            $('#DiemTrungBinh').on('blur', function() {
+                var value = $(this).val();
+                if (value !== '') {
+                    // Replace comma with dot for parsing
+                    var normalizedValue = value.replace(',', '.');
+                    var numValue = parseFloat(normalizedValue);
+                    if (!isNaN(numValue)) {
+                        // Format with dot as decimal separator
+                        $(this).val(numValue.toFixed(1));
+                    }
                 }
+            });
+
+            // Allow comma input
+            $('#DiemTrungBinh').on('keypress', function(e) {
+                // Allow numbers, comma, dot, backspace, delete, arrow keys
+                if ((e.which >= 48 && e.which <= 57) || // numbers
+                    e.which === 44 || // comma
+                    e.which === 46 || // dot
+                    e.which === 8 ||  // backspace
+                    e.which === 9 ||  // tab
+                    e.which === 13 || // enter
+                    e.which === 37 || // left arrow
+                    e.which === 39 || // right arrow
+                    e.which === 46) { // delete
+                    return true;
+                }
+                return false;
+            });
+
+            // Cập nhật dropdown học kỳ khi chọn học viên
+            $('#MaNguoi').on('change', function() {
+                var selectedNguoi = $(this).val();
+                var hocKyDropdown = $('#MaHocKy');
                 
-                // Show loading state
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...';
-                submitBtn.disabled = true;
+                if (selectedNguoi) {
+                    // Gọi AJAX để lấy danh sách học kỳ chưa có kết quả
+                    $.ajax({
+                        url: '@Url.Action("GetAvailableHocKy", "KetQuaHocTap")',
+                        type: 'GET',
+                        data: { maNguoi: selectedNguoi },
+                        success: function(data) {
+                            hocKyDropdown.empty();
+                            hocKyDropdown.append('<option value="">-- Chọn học kỳ --</option>');
+                            
+                            $.each(data, function(index, item) {
+                                hocKyDropdown.append('<option value="' + item.value + '">' + item.text + '</option>');
+                            });
+                        },
+                        error: function() {
+                            console.log('Lỗi khi tải danh sách học kỳ');
+                        }
+                    });
+                } else {
+                    // Reset dropdown nếu không chọn học viên
+                    hocKyDropdown.empty();
+                    hocKyDropdown.append('<option value="">-- Chọn học kỳ --</option>');
+                }
             });
-            
-            // Auto-focus first field
-            const firstField = form.querySelector('select, input, textarea');
-            if (firstField) firstField.focus();
         });
-        
-        // Debug info (removed heavy JSON serialization to avoid circular references)
     </script>
 }
 

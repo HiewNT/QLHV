@@ -15,7 +15,76 @@
         </a>
     </div>
 
+    <!-- Bộ lọc -->
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 15px;">
+        <div class="card-header bg-light border-0" style="border-radius: 15px 15px 0 0;">
+            <h6 class="card-title mb-0 text-primary">
+                <i class="bi bi-funnel me-2"></i>Bộ lọc tìm kiếm
+            </h6>
+        </div>
+        <div class="card-body">
+            <form id="filterForm">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Họ và tên</label>
+                        <input type="text" class="form-control" id="hoTenFilter" placeholder="Nhập họ tên...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Cấp bậc</label>
+                        <input type="text" class="form-control" id="capBacFilter" placeholder="Nhập cấp bậc...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Chức vụ</label>
+                        <input type="text" class="form-control" id="chucVuFilter" placeholder="Nhập chức vụ...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Trường học</label>
+                        <input type="text" class="form-control" id="truongHocFilter" placeholder="Nhập trường học...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Qua trường</label>
+                        <input type="text" class="form-control" id="quaTruongFilter" placeholder="Nhập qua trường...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Trình độ</label>
+                        <select class="form-select" id="trinhDoFilter">
+                            <option value="">Tất cả trình độ</option>
+                            @foreach (var trinhDo in ViewBag.MaTrinhDo ?? new List<SelectListItem>())
+                            {
+                                <option value="@trinhDo.Value">@trinhDo.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Loại Đảng viên</label>
+                        <select class="form-select" id="loaiDangVienFilter">
+                            <option value="">Tất cả loại Đảng viên</option>
+                            @foreach (var loaiDangVien in ViewBag.MaLoaiDangVien ?? new List<SelectListItem>())
+                            {
+                                <option value="@loaiDangVien.Value">@loaiDangVien.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Đoàn viên</label>
+                        <select class="form-select" id="doanVienFilter">
+                            <option value="">Tất cả</option>
+                            <option value="true">Có</option>
+                            <option value="false">Không</option>
+                        </select>
+                    </div>
 
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-outline-secondary" id="clearFilter">
+                            <i class="bi bi-x-circle me-1"></i>Xóa bộ lọc
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="card shadow-sm border-0" style="border-radius: 15px;">
         <div class="card-header bg-primary text-white border-0" style="border-radius: 15px 15px 0 0;">
@@ -148,13 +217,26 @@
     </style>
     
     <script>
+        let dataTable;
+        
         $(document).ready(function() {
-            $('#nhanVienTable').DataTable({
+            dataTable = $('#nhanVienTable').DataTable({
                 "processing": true,
                 "serverSide": false,
                 "ajax": {
                     "url": "@Url.Action("GetData")",
-                    "type": "GET"
+                    "type": "GET",
+                    "data": function(d) {
+                        // Thêm các tham số lọc vào request
+                        d.hoTen = $('#hoTenFilter').val();
+                        d.capBac = $('#capBacFilter').val();
+                        d.chucVu = $('#chucVuFilter').val();
+                        d.truongHoc = $('#truongHocFilter').val();
+                        d.quaTruong = $('#quaTruongFilter').val();
+                        d.maTrinhDo = $('#trinhDoFilter').val();
+                        d.maLoaiDangVien = $('#loaiDangVienFilter').val();
+                        d.doanVien = $('#doanVienFilter').val();
+                    }
                 },
                 "columns": [
                     { "data": "hoTen" },
@@ -209,7 +291,7 @@
                     }
                 ],
                 "language": {
-                    "url": "//cdn.datatables.net/1.13.7/i18n/vi.json"
+                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/vi.json"
                 },
                 "pageLength": 25,
                 "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Tất cả"]],
@@ -223,6 +305,17 @@
                         $(this).addClass('fade-in');
                     });
                 }
+            });
+
+            // Xử lý sự kiện xóa bộ lọc
+            $('#clearFilter').click(function() {
+                $('#filterForm')[0].reset();
+                dataTable.ajax.reload();
+            });
+
+            // Lọc tự động khi người dùng nhập
+            $('#filterForm input, #filterForm select').on('input change', function() {
+                dataTable.ajax.reload();
             });
         });
     </script>
